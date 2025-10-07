@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en" data-theme="ocean">
+<head>
+  <meta charset="utf-8" />
+  <title>Collage Co-Creator</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* THEME TOKENS */
+    :root { --bg:#0f1115; --fg:#e5e7eb; --muted:#94a3b8; --card:#151822; --accent:#7dd3fc; --accent2:#a78bfa; --border:#2b3040; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="ocean"]  { --bg:#163c51; --fg:#bde6f4; --muted:#95b0be; --card:#163c51; --accent:#3b8eac; --accent2:#7aa2ff; --border:#23536e; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="sunset"] { --bg:#432121; --fg:#eec8bd; --muted:#d19f9f; --card:#432121; --accent:#d47651; --accent2:#ffb86b; --border:#703838; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="forest"] { --bg:#244535; --fg:#c4ebce; --muted:#a6b5ac; --card:#244535; --accent:#7db09c; --accent2:#349873; --border:#3a6f56; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="mono"]   { --bg:#26264a; --fg:#e5d3f2; --muted:#a1a1aa; --card:#26264a; --accent:#9aa0ff; --accent2:#b38fff; --border:#5b5ba7; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="floral"] { --bg:#710471; --fg:#e4bddc; --muted:#c083ba; --card:#4e174d; --accent:#a53bac; --accent2:#ff7acc; --border:#6e236b; --ok:#22c55e; --warn:#f59e0b; }
+    :root[data-theme="desert"] {
+  --bg:#3b2a1a; --fg:#f3e2c7; --muted:#c9b094; --card:#4b3522;
+  --accent:#d9a066; --accent2:#f2c57c; --border:#6c5131; --ok:#22c55e; --warn:#f59e0b;
+}
+:root[data-theme="aurora"] {
+  --bg:#101a27; --fg:#d6faff; --muted:#9ac7c9; --card:#122230;
+  --accent:#4ad9d9; --accent2:#a9ffcb; --border:#224050; --ok:#22c55e; --warn:#f59e0b;
+}
+:root[data-theme="noir"] {
+  --bg:#0c0c0c; --fg:#f2f2f2; --muted:#a1a1a1; --card:#161616;
+  --accent:#8e8e8e; --accent2:#d1d1d1; --border:#2a2a2a; --ok:#22c55e; --warn:#f59e0b;
+}
+
+/* Cursor controls */
+.cursor-controls { display:grid; gap:10px; margin-top:14px; }
+.cursor-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+.cursor-row label { color: var(--fg); font-size:14px; }
+.cursor-radio { display:flex; gap:12px; }
+.cursor-radio input { margin-right:6px; }
+
+    /* Base */
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:"Nunito Sans", system-ui, -apple-system, Segoe UI, Roboto, Inter,"Helvetica Neue", Arial; }
+    .wrap { min-height:100dvh; display:grid; place-items:center; padding:24px;
+      background: radial-gradient(80% 60% at 50% 10%, color-mix(in oklab, var(--accent) 12%, transparent) 0%, transparent 70%); }
+    .card { width:100%; max-width:720px; text-align: center; background:transparent; border:0px solid var(--border); border-radius:16px; padding:20px; box-shadow:0 0px 0px rgba(0,0,0); }
+    h1 { margin:0 0 8px; font-size:28px; }
+    p { margin:0 0 16px; color:var(--muted); }
+    .row { display:grid; grid-template-columns:1fr; gap:14px; align-content: center;}
+    @media (min-width:720px){ .row{ grid-template-columns:1fr 1fr; } }
+
+    label { font-size:12px; color:var(--muted); }
+    .field { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:10px 12px; display:flex; gap:8px; align-items:center; }
+    input[type="text"]{ flex:1; border:0; outline:none; background:transparent; color:var(--fg); font-size:16px; }
+    .btn { display:inline-flex; align-items:center; gap:8px; border-radius:10px; border:1px solid var(--border); background:var(--fg); color:#0b1020; padding:10px 14px; font-weight:700; cursor:pointer; }
+    .btn.ghost { background:transparent; color:var(--fg); border-color:var(--border); }
+    .btn[disabled]{ opacity:.6; cursor:not-allowed; }
+    .footer { display:flex; gap:10px; justify-content:flex-end; margin-top:16px; }
+
+    /* Steps */
+    .step { display:none; }
+    .step.active { display:block; }
+
+    /* Theme swatches */
+    .swatches { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .swatch { border:1px solid var(--border); border-radius:12px; overflow:hidden; cursor:pointer; background:#0b0e16; }
+    .swatch .bars { display:grid; grid-template-columns:repeat(5,1fr); height:44px; }
+    .swatch span { display:block; height:100%; }
+    .swatch label { display:block; text-align:center; padding:8px; color:var(--muted); font-size:12px; text-transform:capitalize; }
+    .swatch.active { outline:2px solid var(--accent); }
+
+    /* Bigger welcome + gentle floating */
+#step-welcome h1 {
+  font-size: 56px;                 /* ~2× your previous 28px */
+  line-height: 1.05;
+  letter-spacing: 0.3px;
+  text-shadow: 0 2px 10px rgba(0,0,0,.25);
+  animation: hoverFloat 3.5s ease-in-out infinite;
+  will-change: transform;
+}
+#step-welcome h2 {
+  font-size: 44px;                 /* ~2× typical subhead size */
+  line-height: 1.1;
+  color: var(--fg);
+  opacity: .95;
+  text-shadow: 0 2px 8px rgba(0,0,0,.2);
+  animation: hoverFloat 4s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Responsive guard so it never gets *too* big on small screens */
+@media (max-width: 520px) {
+  #step-welcome h1 { font-size: 40px; }
+  #step-welcome h2 { font-size: 32px; }
+}
+
+/* Float animation */
+@keyframes hoverFloat {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-6px); }
+  100% { transform: translateY(0); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #step-welcome h1, #step-welcome h2 { animation: none; }
+}
+
+/* Arrow button style */
+.arrow-btn {
+  width: 48px; height: 48px; padding: 0;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--fg); color: #0b1020; border-color: var(--border);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  animation: hoverSlide 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Arrow icon sizing */
+.arrow-icon { width: 24px; height: 24px; }
+
+/* On hover/focus: pause drift, give a nudge */
+.arrow-btn:hover, .arrow-btn:focus-visible {
+  animation-play-state: paused;
+  transform: translateX(4px);
+  outline: none;
+}
+
+/* Horizontal drift animation */
+@keyframes hoverSlide {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(6px); }
+  100% { transform: translateX(0); }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .arrow-btn { animation: none; }
+}
+
+/* Left-pointing arrow button */
+.arrow-btn-left {
+  width: 48px; height: 48px; padding: 0;
+  border-radius: 999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--fg); color: #0b1020; border-color: var(--border);
+  box-shadow: 0 6px 18px rgba(0,0,0,.25);
+  animation: hoverSlideLeft 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+.arrow-btn-left:hover,
+.arrow-btn-left:focus-visible {
+  animation-play-state: paused;
+  transform: translateX(-4px);
+  outline: none;
+}
+
+.arrow-icon { width: 24px; height: 24px; }
+
+
+
+/* Horizontal drift animation (left direction) */
+@keyframes hoverSlideLeft {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(-6px); }
+  100% { transform: translateX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arrow-btn-left { animation: none; }
+}
+
+/* Reusable gentle float */
+@keyframes floatY {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-6px); } /* up by 6px */
+  100% { transform: translateY(0); }
+}
+
+/* Apply to the two titles */
+#step-theme h1,
+#step-username h1 {
+  animation: floatY 4s ease-in-out infinite;  /* slower = larger duration */
+  will-change: transform;
+  transition: color .25s ease;                 /* optional color change on hover/focus */
+}
+
+/* Optional: color pop on hover/focus without moving position more */
+#step-theme h1:hover,
+#step-username h1:hover,
+#step-theme h1:focus-visible,
+#step-username h1:focus-visible {
+  color: var(--accent);
+  outline: none;
+}
+
+/* Accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #step-theme h1,
+  #step-username h1 {
+    animation: none;
+  }
+}
+
+
+
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <!-- STEP 1: Welcome (only this is visible at first) -->
+    <div id="step-welcome" class="step active">
+      <h1>Welcome!</h1>
+      <h2> Let’s set up your studio</h2>
+      <p>We’ll start with creating a username and choosing a color theme. Let's make this space yours!</p>
+      <div class="footer">
+        <button id="toTheme" class="btn arrow-btn" aria-label="Continue">
+          <svg viewBox="0 0 24 24" class="arrow-icon" aria-hidden="true">
+            <path d="M5 12h12m-5-5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+
+      
+
+      <!-- STEP 2: Pick Theme -->
+      <div id="step-theme" class="step card ">
+        <h1 class="float-title">Pick your color palette</h1>
+        <p>Choose the vibe for your studio.</p>
+        <div>
+          <div class="swatches" id="swatches"></div>
+        </div>
+        <div class="footer">
+          <button id="backToWelcome" class="btn arrow-btn-left" aria-label="Back">
+            <svg viewBox="0 0 24 24" class="arrow-icon" aria-hidden="true">
+              <path d="M19 12H7m5-5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button id="toUsername" class="btn arrow-btn" aria-label="Continue">
+            <svg viewBox="0 0 24 24" class="arrow-icon" aria-hidden="true">
+              <path d="M5 12h12m-5-5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+
+        </div>
+      </div>
+      
+
+      <!-- STEP 3: Username -->
+      <div id="step-username" class="step card ">
+        <h1 class="float-title">Create your username</h1>
+          <div>
+            <div class="field">
+              <input id="username" type="text" placeholder="Your creative handle" />
+              <button id="randBtn" class="btn ghost" type="button">Randomize</button>
+            </div>
+            <div style="margin-top:6px; font-size:12px; color:var(--muted)">Tip: click Randomize until you like it.</div>
+          </div>
+        <div class="footer">
+          
+          <button id="backToTheme" class="btn arrow-btn-left" aria-label="Back">
+            <svg viewBox="0 0 24 24" class="arrow-icon" aria-hidden="true">
+              <path d="M19 12H7m5-5l-5 5 5 5" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button id="startBtn" class="btn arrow-btn" aria-label="Continue">
+            <svg viewBox="0 0 24 24" class="arrow-icon" aria-hidden="true">
+              <path d="M5 12h12m-5-5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+      </div>
+
+    </section>
+  </main>
+
+  <script>
+    // ---------- Step control ----------
+    const steps = {
+      welcome: document.getElementById('step-welcome'),
+      theme: document.getElementById('step-theme'),
+      usernameStep: document.getElementById('step-username'),
+    };
+    function show(id){
+      Object.values(steps).forEach(el => el.classList.remove('active'));
+      id.classList.add('active');
+    }
+
+    // ---------- Random username ----------
+    const adjectives = [
+  "chromatic","luminous","textured","kinetic","ethereal","avant-garde",
+  "verdant","sinuous","prismatic","minimal","baroque","pastel",
+  "monochrome","surreal","vivid","oblique","nocturne","gilded",
+  "rustic","nebulous"
+];
+
+const nouns = [
+  "heron","lynx","kestrel","otter","moth","fox","sparrow","orca","puma","ibex",
+  "cobra","cormorant","gecko","jackal","manatee","tamarin","wren","viper","lark","cuttlefish"
+];
+
+    const rand = arr => arr[Math.floor(Math.random()*arr.length)];
+    const makeName = () => `${rand(adjectives)}_${rand(nouns)}_${Math.floor(100+Math.random()*900)}`;
+
+    // ---------- Theme swatches ----------
+    const THEMES = {
+  ocean:  ["#07131a","#0c1c24","#66d7ff","#7aa2ff","#e6f2f6"],
+  sunset: ["#1a1010","#241414","#ff8a5c","#ffb86b","#ffe9e3"],
+  forest: ["#0e1411","#141b16","#6ee7b7","#34d399","#eaf2ec"],
+  mono:   ["#0e0e10","#15151a","#9aa0ff","#b38fff","#e5e5e5"],
+  floral: ["#710471","#4e174d","#a53bac","#ff7acc","#e4bddc"],
+  desert: ["#3b2a1a","#4b3522","#d9a066","#f2c57c","#f3e2c7"],
+  aurora: ["#101a27","#122230","#4ad9d9","#a9ffcb","#d6faff"],
+  noir:   ["#0c0c0c","#161616","#8e8e8e","#d1d1d1","#f2f2f2"]
+};
+
+    const swatches = document.getElementById('swatches');
+
+    function renderSwatches(active="ocean"){
+      swatches.innerHTML = "";
+      Object.entries(THEMES).forEach(([key, colors]) => {
+        const div = document.createElement('div');
+        div.className = 'swatch' + (key===active ? ' active' : '');
+        div.dataset.theme = key;
+        div.innerHTML = `
+          <div class="bars">
+            <span style="background:${colors[0]}"></span>
+            <span style="background:${colors[1]}"></span>
+            <span style="background:${colors[2]}"></span>
+            <span style="background:${colors[3]}"></span>
+            <span style="background:${colors[4]}"></span>
+          </div>
+          <label>${key}</label>
+        `;
+        div.addEventListener('click', () => {
+          document.documentElement.setAttribute('data-theme', key);
+          [...swatches.children].forEach(el => el.classList.toggle('active', el===div));
+          localStorage.setItem('theme', key);
+        });
+        swatches.appendChild(div);
+      });
+    }
+
+    // ---------- Elements ----------
+    const username   = document.getElementById('username');
+    const randBtn    = document.getElementById('randBtn');
+    const startBtn   = document.getElementById('startBtn');
+
+    const toTheme      = document.getElementById('toTheme');
+    const backToWelcome= document.getElementById('backToWelcome');
+    const toUsername   = document.getElementById('toUsername');
+    const backToTheme  = document.getElementById('backToTheme');
+
+    // ---------- Enable save when username present ----------
+    function maybeEnableStart(){ startBtn.disabled = !username.value.trim(); }
+
+    // ---------- Prefill ----------
+    const savedTheme = localStorage.getItem('theme') || 'ocean';
+    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    renderSwatches(savedTheme);
+
+    const savedName = localStorage.getItem('userName');
+    username.value = savedName || makeName();
+    maybeEnableStart();
+
+    // ---------- Events ----------
+    toTheme.addEventListener('click', () => show(steps.theme));
+    backToWelcome.addEventListener('click', () => show(steps.welcome));
+    toUsername.addEventListener('click', () => show(steps.usernameStep));
+    backToTheme.addEventListener('click', () => show(steps.theme));
+
+    randBtn.addEventListener('click', () => { username.value = makeName(); maybeEnableStart(); });
+    username.addEventListener('input', maybeEnableStart);
+
+    startBtn.addEventListener('click', () => {
+      const name  = username.value.trim() || makeName();
+      const theme = document.documentElement.getAttribute('data-theme') || 'ocean';
+      localStorage.setItem('userName', name);
+      localStorage.setItem('theme', theme);
+      window.location.href = 'create.html';
+    });
+  </script>
+</body>
+</html>
