@@ -243,27 +243,30 @@
 
 <div style="margin-top:10px; text-align:center;">
   <button id="openCameraBtn" class="btn ghost" type="button">📷 Take a photo</button>
+  <button id="runBtn" disabled>
+    <span class="btn ghost" style="display:none" id="spin"></span>
+    Generate!
+  </button>
+</div>
+
+
+<!-- Progress UI for the 5 presets -->
+<div class="progress-wrap" id="pwrap"><div class="progress-bar" id="pbar"></div></div>
+<div class="progress-meta" id="pmeta">
+  <span id="ptext">Preparing…</span><span id="eta" style="float:right;"></span>
 </div>
 
 
 
       <div class="preview" id="preview"></div>
-
-
-
       <div class="actions">
         <input id="extraPrompt" style="background: var(--bg); " type="text" placeholder="(Optional) extra instructions / themes"/>
-        <button id="runBtn" disabled>
-          <span class="spinner" style="display:none" id="spin"></span>
-          Generate!
-        </button>
+       
       </div>
 
-      <!-- Progress UI for the 5 presets -->
-      <div class="progress-wrap" id="pwrap"><div class="progress-bar" id="pbar"></div></div>
-      <div class="progress-meta" id="pmeta">
-        <span id="ptext">Preparing…</span><span id="eta" style="float:right;"></span>
-      </div>
+
+
+      
 
       
     </section>
@@ -388,6 +391,16 @@
   
 
   <script>
+
+     // Change to your real worker URL:
+  const API_BASE = "https://collage-worker.ac138.workers.dev/";
+
+// Optional: dev/prod auto-switch
+// If you're running a local server for testing, keep using relative paths
+const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const api = (path) => isLocal ? path : `${API_BASE}${path}`;
+
+
     const dz = document.getElementById('dropzone');
     const fi = document.getElementById('fileInput');
     const preview = document.getElementById('preview');
@@ -944,7 +957,8 @@ async function runPresets() {
   if (finalPrompt) fd.append('prompt', finalPrompt);
 
   try {
-    const resp = await fetch('/edit', { method: 'POST', body: fd, signal: controller.signal });
+    const resp = await fetch(api('/edit'), { method: 'POST', body: fd, signal: controller.signal });
+
     if (!resp.ok) {
       const err = await resp.json().catch(() => ({}));
       throw new Error(err.error || `HTTP ${resp.status}`);
@@ -1019,7 +1033,7 @@ async function runCustomOnce() {
   fd.append('allowModify', safeMode ? 'false' : 'true');
 
   try {
-    const resp = await fetch('/edit-custom', { method: 'POST', body: fd });
+    const resp = await fetch(api('/edit-custom'), { method: 'POST', body: fd });
     if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || `HTTP ${resp.status}`); }
     const data = await resp.json();
 

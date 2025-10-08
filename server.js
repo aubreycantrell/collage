@@ -10,7 +10,8 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 // ====== PASTE YOUR API KEY HERE (or use env var) ======
 const openai = new OpenAI({
-    apiKey: API_KEY
+    apiKey: OPENAI_API_KEY
+
   });
 // ======================================================
 
@@ -46,11 +47,12 @@ const styles = [
 ];
 
 const OVERLAY_ONLY_SUFFIX =
-  "STRICT REQUIREMENT: Overlay new elements on top of the current image only. " +
-  "Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. " +
-  "Preserve all original composition, lighting, textures, edges, and geometry. " +
-  "No global filters. No inpainting outside added elements. No background edits. " +
-  "Blend additions believably with soft shadows/occlusion. No text, logos, brands, or faces.";
+"STRICT REQUIREMENT: Only add new visual elements on top of the existing image. " +
+"Do not modify or remove any part of the original image. " +
+"Keep the original layout, lighting, materials, and edges unchanged. " +
+"No global filters, recoloring, or blurring outside added items. " +
+"Ensure new additions blend naturally using consistent shading and lighting. " +
+"No text, symbols, logos, or recognizable human features.";
 
 
 
