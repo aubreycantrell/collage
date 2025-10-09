@@ -948,7 +948,6 @@ async function runPresets() {
   // ----- Build form data with Safe Mode support -----
   const fd = new FormData();
   fd.append('image', file);
-  fd.append('prompt', finalPrompt || '');
   fd.append('username', localStorage.getItem('userName') || 'anon');
   fd.append('session',  localStorage.getItem('sessionId') || (()=>{
   const s = crypto.randomUUID(); localStorage.setItem('sessionId', s); return s;
