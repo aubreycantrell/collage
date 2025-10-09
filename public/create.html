@@ -1,399 +1,447 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Collage Co-Creator</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+ <meta charset="utf-8" />
+ <title>Collage Co-Creator</title>
+ <meta name="viewport" content="width=device-width,initial-scale=1" />
+ <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 
-  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #0f1115; --fg:#e5e7eb; --muted:#94a3b8; --card:#151822;
-      --accent:#7dd3fc; --accent2:#a78bfa; --border:#2b3040; --ok:#22c55e; --warn:#f59e0b; 
-    }
-    :root[data-theme="ocean"]  { --bg:#163c51; --fg:#bde6f4; --muted:#95b0be; --card:#163c51; --accent:#3b8eac; --accent2:#7aa2ff; --border:#23536e; --ok:#22c55e; --warn:#f59e0b; }
-    :root[data-theme="sunset"] { --bg:#432121; --fg:#eec8bd; --muted:#d19f9f; --card:#432121; --accent:#d47651; --accent2:#ffb86b; --border:#703838; --ok:#22c55e; --warn:#f59e0b; }
-    :root[data-theme="forest"] { --bg:#244535; --fg:#c4ebce; --muted:#a6b5ac; --card:#244535; --accent:#7db09c; --accent2:#349873; --border:#3a6f56; --ok:#22c55e; --warn:#f59e0b; }
-    :root[data-theme="floral"]  { --bg:#710471; --fg:#e4bddc; --muted:#c083ba; --card:#4e174d; --accent:#a53bac; --accent2:#ff7acc; --border:#6e236b; --ok:#22c55e; --warn:#f59e0b; }
-    :root[data-theme="desert"] {
-  --bg:#3b2a1a; --fg:#f3e2c7; --muted:#c9b094; --card:#4b3522;
-  --accent:#d9a066; --accent2:#f2c57c; --border:#6c5131; --ok:#22c55e; --warn:#f59e0b;
+
+ <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+ <style>
+   :root {
+     --bg: #0f1115; --fg:#e5e7eb; --muted:#94a3b8; --card:#151822;
+     --accent:#7dd3fc; --accent2:#a78bfa; --border:#2b3040; --ok:#22c55e; --warn:#f59e0b;
+   }
+   :root[data-theme="ocean"]  { --bg:#163c51; --fg:#bde6f4; --muted:#95b0be; --card:#163c51; --accent:#3b8eac; --accent2:#7aa2ff; --border:#23536e; --ok:#22c55e; --warn:#f59e0b; }
+   :root[data-theme="sunset"] { --bg:#432121; --fg:#eec8bd; --muted:#d19f9f; --card:#432121; --accent:#d47651; --accent2:#ffb86b; --border:#703838; --ok:#22c55e; --warn:#f59e0b; }
+   :root[data-theme="forest"] { --bg:#244535; --fg:#c4ebce; --muted:#a6b5ac; --card:#244535; --accent:#7db09c; --accent2:#349873; --border:#3a6f56; --ok:#22c55e; --warn:#f59e0b; }
+   :root[data-theme="floral"]  { --bg:#710471; --fg:#e4bddc; --muted:#c083ba; --card:#4e174d; --accent:#a53bac; --accent2:#ff7acc; --border:#6e236b; --ok:#22c55e; --warn:#f59e0b; }
+   :root[data-theme="desert"] {
+ --bg:#3b2a1a; --fg:#f3e2c7; --muted:#c9b094; --card:#4b3522;
+ --accent:#d9a066; --accent2:#f2c57c; --border:#6c5131; --ok:#22c55e; --warn:#f59e0b;
 }
 :root[data-theme="aurora"] {
-  --bg:#101a27; --fg:#d6faff; --muted:#9ac7c9; --card:#122230;
-  --accent:#4ad9d9; --accent2:#a9ffcb; --border:#224050; --ok:#22c55e; --warn:#f59e0b;
+ --bg:#101a27; --fg:#d6faff; --muted:#9ac7c9; --card:#122230;
+ --accent:#4ad9d9; --accent2:#a9ffcb; --border:#224050; --ok:#22c55e; --warn:#f59e0b;
 }
 :root[data-theme="noir"] {
-  --bg:#0c0c0c; --fg:#f2f2f2; --muted:#a1a1a1; --card:#161616;
-  --accent:#8e8e8e; --accent2:#d1d1d1; --border:#2a2a2a; --ok:#22c55e; --warn:#f59e0b;
+ --bg:#0c0c0c; --fg:#f2f2f2; --muted:#a1a1a1; --card:#161616;
+ --accent:#8e8e8e; --accent2:#d1d1d1; --border:#2a2a2a; --ok:#22c55e; --warn:#f59e0b;
 }
-    :root[data-theme="mono"]   { --bg:#26264a; --fg:#e5d3f2; --muted:#a1a1aa; --card:#26264a; --accent:#9aa0ff; --accent2:#b38fff; --border:#5b5ba7; --ok:#22c55e; --warn:#f59e0b; }
-    body { margin: 0; background: var(--fg); color: var(--fg);
-      font-family: "Nunito Sans", system-ui, -apple-system;}
-      .container { max-width: 1400px; margin: 2px auto; padding: 2.5% 16px; }
-    .urow { display: grid; grid-template-columns: 1fr; gap: 16px; }
-    @media (min-width: 900px) { .urow { grid-template-columns: 360px 1fr; } }
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
-    .dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 32px; text-align: center; transition: border-color .2s, background .2s; cursor: pointer; user-select: none; }
-    .dropzone.dragover { border-color: var(--accent); background: rgba(125,211,252,.06); }
-    .muted { color: var(--muted); }
-    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-    input[type="text"], select, textarea {
-      width: 100%; padding: 10px 12px; border-radius: 10px;
-      border: 1px solid var(--border); background: #0c0f17; color: var(--fg); outline: none;
-    }
-    button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--fg); color: #0b1020; font-weight: 700; cursor: pointer; }
-    button[disabled] { opacity: .6; cursor: not-allowed; }
-    .preview { display: grid; gap: 10px; padding: 5%; }
-    .preview img, .result img {
-      width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--border);
-      background: #0b0e16; cursor: zoom-in;
-    }
-    .grid { display: grid; gap: 16px; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
-    .result { position: relative; background: #0c0f17; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
-    .caption { margin-top: 8px; font-size: 14px; color: var(--muted); }
+   :root[data-theme="mono"]   { --bg:#26264a; --fg:#e5d3f2; --muted:#a1a1aa; --card:#26264a; --accent:#9aa0ff; --accent2:#b38fff; --border:#5b5ba7; --ok:#22c55e; --warn:#f59e0b; }
+   body { margin: 0; background: var(--fg); color: var(--fg);
+     font-family: "Nunito Sans", system-ui, -apple-system;}
+     .container { max-width: 1400px; margin: 2px auto; padding: 2.5% 16px; }
+   .urow { display: grid; grid-template-columns: 1fr; gap: 16px; }
+   @media (min-width: 900px) { .urow { grid-template-columns: 360px 1fr; } }
+   .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+   .dropzone { border: 2px dashed var(--border); border-radius: 16px; padding: 32px; text-align: center; transition: border-color .2s, background .2s; cursor: pointer; user-select: none; }
+   .dropzone.dragover { border-color: var(--accent); background: rgba(125,211,252,.06); }
+   .muted { color: var(--muted); }
+   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+   input[type="text"], select, textarea {
+     width: 100%; padding: 10px 12px; border-radius: 10px;
+     border: 1px solid var(--border); background: #0c0f17; color: var(--fg); outline: none;
+   }
+   button { padding: 10px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--fg); color: #0b1020; font-weight: 700; cursor: pointer; }
+   button[disabled] { opacity: .6; cursor: not-allowed; }
+   .preview { display: grid; gap: 10px; padding: 5%; }
+   .preview img, .result img {
+     width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--border);
+     background: #0b0e16; cursor: zoom-in;
+   }
+   .grid { display: grid; gap: 16px; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+   .result { position: relative; background: #0c0f17; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
+   .caption { margin-top: 8px; font-size: 14px; color: var(--muted); }
 
-    /* Blur veil for locked results */
-    .result.locked img { filter: blur(12px); pointer-events: none; }
-    .veil {
-      position: absolute; inset: 12px 12px 36px 12px; display: grid; place-items: center;
-      border-radius: 12px; background: rgba(0,0,0,.35); color: #fff; font-weight: 700;
-      text-shadow: 0 2px 8px rgba(0,0,0,.6); border: 1px dashed rgba(255,255,255,.25);
-      cursor: pointer; user-select: none;
-    }
-    .veil small { display:block; font-weight:500; opacity:.9; }
 
-    .spinner { width: 18px; height: 18px; border-radius: 50%;
-      border: 3px solid rgba(255,255,255,.25); border-top-color: #fff;
-      animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
-    @keyframes spin { to { transform: rotate(360deg);} }
+   /* Blur veil for locked results */
+   .result.locked img { filter: blur(12px); pointer-events: none; }
+   .veil {
+     position: absolute; inset: 12px 12px 36px 12px; display: grid; place-items: center;
+     border-radius: 12px; background: rgba(0,0,0,.35); color: #fff; font-weight: 700;
+     text-shadow: 0 2px 8px rgba(0,0,0,.6); border: 1px dashed rgba(255,255,255,.25);
+     cursor: pointer; user-select: none;
+   }
+   .veil small { display:block; font-weight:500; opacity:.9; }
 
-    .progress-wrap { margin-top: 10px; background: #0c0f17; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; height: 14px; display: none; }
-    .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--muted), var(--fg)); transition: width .25s ease; }
-    .progress-meta { margin-top: 6px; display: none; font-size: 12px; color: var(--muted); }
-    .eta-ok { color: var(--ok); } .eta-slow { color: var(--warn); }
 
-    /* Lightbox */
-    .lightbox { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.72); z-index: 9999; padding: 24px; }
-    .lightbox.open { display: flex; }
-    .lightbox-content { position: relative; max-width: 95vw; max-height: 92vh; background: #0b0e16; border: 1px solid #2b3040; border-radius: 14px; padding: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
-    .lightbox img { display: block; max-width: 92vw; max-height: 80vh; border-radius: 10px; }
-    .lightbox-close { position: absolute; top: 6px; right: 8px; border: 0; background: transparent; color: #cbd5e1; font-size: 22px; cursor: pointer; }
+   .spinner { width: 18px; height: 18px; border-radius: 50%;
+     border: 3px solid rgba(255,255,255,.25); border-top-color: #fff;
+     animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px; }
+   @keyframes spin { to { transform: rotate(360deg);} }
 
-    /* PLUS card (always last) */
-    .plus-card {
-      display: grid; place-items: center; aspect-ratio: 1 / 1;
-      border: 2px dashed var(--border); border-radius: 16px; background: #0b0e16;
-      color: var(--muted); cursor: pointer; transition: border-color .2s, color .2s, background .2s;
-      min-height: 180px; padding: 12px;
-    }
-    .plus-card:hover { border-color: var(--accent); color: #fff; background: rgba(125,211,252,.06); }
-    .plus-inner { text-align: center; }
-    .plus-symbol { font-size: 48px; line-height: 1; }
-    .plus-caption { font-size: 12px; margin-top: 4px; color: var(--muted); }
 
-    .plus-card.disabled { opacity:.6; cursor:not-allowed; }
-    .plus-card.disabled:hover { border-color: var(--border); color: var(--muted); background: #0b0e16; }
+   .progress-wrap { margin-top: 10px; background: #0c0f17; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; height: 14px; display: none; }
+   .progress-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--muted), var(--fg)); transition: width .25s ease; }
+   .progress-meta { margin-top: 6px; display: none; font-size: 12px; color: var(--muted); }
+   .eta-ok { color: var(--ok); } .eta-slow { color: var(--warn); }
 
-    /* Loading state inside + card */
-    .plus-loading { display:none; width: 80%; margin-top: 8px; }
-    .plus-loading-rail { width: 100%; height: 10px; border-radius: 8px; background: #0c0f17; border: 1px solid var(--border); overflow: hidden; }
-    .plus-loading-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--muted), var(--fg)); transition: width .25s ease; }
-    .plus-card.loading .plus-symbol, .plus-card.loading .plus-caption { display: none; }
-    .plus-card.loading .plus-loading { display: block; }
 
-    /* Custom modal */
-    .modal { position: fixed; inset: 0; display: none; z-index: 10000; background: rgba(0,0,0,.65); align-items:center; justify-content:center; padding: 20px; }
-    .modal.open { display:flex; }
-    .modal-card { background: #0c0f17; border:1px solid var(--border); border-radius:14px; max-width: 680px; width: 100%; padding: 16px; }
-    .modal-header { display:flex; align-items:center; justify-content:space-between; }
-    .modal-title { font-weight: 700; }
+   /* Lightbox */
+   .lightbox { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.72); z-index: 9999; padding: 24px; }
+   .lightbox.open { display: flex; }
+   .lightbox-content { position: relative; max-width: 95vw; max-height: 92vh; background: #0b0e16; border: 1px solid #2b3040; border-radius: 14px; padding: 10px; box-shadow: 0 20px 60px rgba(0,0,0,.6); }
+   .lightbox img { display: block; max-width: 92vw; max-height: 80vh; border-radius: 10px; }
+   .lightbox-close { position: absolute; top: 6px; right: 8px; border: 0; background: transparent; color: #cbd5e1; font-size: 22px; cursor: pointer; }
 
-    .custom-card { background:#0b0e16; border:1px dashed var(--border); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:10px; }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    @media (max-width: 700px){ .row{ grid-template-columns: 1fr; } }
-    .small { font-size:12px; color:var(--muted); }
 
-    .hidden { display:none; }
-    /* Only blur the base image when locked */
+   /* PLUS card (always last) */
+   .plus-card {
+     display: grid; place-items: center; aspect-ratio: 1 / 1;
+     border: 2px dashed var(--border); border-radius: 16px; background: #0b0e16;
+     color: var(--muted); cursor: pointer; transition: border-color .2s, color .2s, background .2s;
+     min-height: 180px; padding: 12px;
+   }
+   .plus-card:hover { border-color: var(--accent); color: #fff; background: rgba(125,211,252,.06); }
+   .plus-inner { text-align: center; }
+   .plus-symbol { font-size: 48px; line-height: 1; }
+   .plus-caption { font-size: 12px; margin-top: 4px; color: var(--muted); }
+
+
+   .plus-card.disabled { opacity:.6; cursor:not-allowed; }
+   .plus-card.disabled:hover { border-color: var(--border); color: var(--muted); background: #0b0e16; }
+
+
+   /* Loading state inside + card */
+   .plus-loading { display:none; width: 80%; margin-top: 8px; }
+   .plus-loading-rail { width: 100%; height: 10px; border-radius: 8px; background: #0c0f17; border: 1px solid var(--border); overflow: hidden; }
+   .plus-loading-bar { width: 0%; height: 100%; background: linear-gradient(90deg, var(--muted), var(--fg)); transition: width .25s ease; }
+   .plus-card.loading .plus-symbol, .plus-card.loading .plus-caption { display: none; }
+   .plus-card.loading .plus-loading { display: block; }
+
+
+   /* Custom modal */
+   .modal { position: fixed; inset: 0; display: none; z-index: 10000; background: rgba(0,0,0,.65); align-items:center; justify-content:center; padding: 20px; }
+   .modal.open { display:flex; }
+   .modal-card { background: #0c0f17; border:1px solid var(--border); border-radius:14px; max-width: 680px; width: 100%; padding: 16px; }
+   .modal-header { display:flex; align-items:center; justify-content:space-between; }
+   .modal-title { font-weight: 700; }
+
+
+   .custom-card { background:#0b0e16; border:1px dashed var(--border); border-radius:16px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+   @media (max-width: 700px){ .row{ grid-template-columns: 1fr; } }
+   .small { font-size:12px; color:var(--muted); }
+
+
+   .hidden { display:none; }
+   /* Only blur the base image when locked */
 .result.locked img.base { filter: blur(12px); pointer-events: none; }
+
 
 /* Spotlight container (on top of the base image) */
 .result .spot {
-  position: absolute;
-  inset: 12px 12px 36px 12px; /* match veil inset */
-  overflow: hidden;
-  border-radius: 12px;
-  pointer-events: none; /* overlay is visual-only */}
+ position: absolute;
+ inset: 12px 12px 36px 12px; /* match veil inset */
+ overflow: hidden;
+ border-radius: 12px;
+ pointer-events: none; /* overlay is visual-only */}
 
-  /* Header dropdown */
+
+ /* Header dropdown */
 .menu-wrap { position: relative; }
 .menu-btn {
-  display:inline-flex; align-items:center; gap:8px;
-  border-radius:10px; border:1px solid var(--card);
-  background: var(--card); color: var(--fg); font-weight:700; padding:8px 12px; cursor:pointer;
+ display:inline-flex; align-items:center; gap:8px;
+ border-radius:10px; border:1px solid var(--card);
+ background: var(--card); color: var(--fg); font-weight:700; padding:8px 12px; cursor:pointer;
 }
 .menu { position:absolute; right:0; top:110%; min-width: 220px; z-index: 50;
-  background: var(--card); border:1px solid var(--border); border-radius:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.35); padding:8px; display:none;
+ background: var(--card); border:1px solid var(--border); border-radius:12px;
+ box-shadow:0 10px 30px rgba(0,0,0,.35); padding:8px; display:none;
 }
 .menu.open { display:block; }
 .menu-item { display:flex; align-items:center; justify-content:space-between; gap:12px;
-  padding:8px 10px; border-radius:8px; cursor:pointer; color:var(--fg);
+ padding:8px 10px; border-radius:8px; cursor:pointer; color:var(--fg);
 }
 .menu-item:hover { background: rgba(125,211,252,.06); }
 .menu-item label { display:flex; align-items:center; gap:8px; cursor:pointer; }
 .menu hr { border:0; border-top:1px solid var(--border); margin:6px 0; }
 
+
 /* Small switch */
 .switch { position:relative; width:40px; height:22px; background:#222; border:1px solid var(--border);
-  border-radius:999px; transition:background .2s;
+ border-radius:999px; transition:background .2s;
 }
 .switch::after{
-  content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
-  background:#fff; transition:transform .2s;
+ content:""; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
+ background:#fff; transition:transform .2s;
 }
 .switch.on { background: var(--accent); }
 .switch.on::after{ transform: translateX(18px); }
 
+
 /* Tutorial modal */
 .tutorial-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
-  background: rgba(0,0,0,.65); z-index:10000; padding: 20px;
+ background: rgba(0,0,0,.65); z-index:10000; padding: 20px;
 }
 .tutorial-modal.open { display:flex; }
 .tutorial-card { background:#0c0f17; border:1px solid var(--border); border-radius:14px;
-  width:min(680px, 95vw); padding:16px; color:var(--fg);
+ width:min(680px, 95vw); padding:16px; color:var(--fg);
 }
 .tutorial-card h3{ margin:0 0 8px; }
 .tutorial-card ul{ margin:8px 0 0 18px; color:var(--muted); }
 .tutorial-close { margin-left:auto; border:0; background:transparent; color:var(--fg);
-  font-size:22px; cursor:pointer;
+ font-size:22px; cursor:pointer;
 }
 :root{
-  --slide-duration: 2000ms;
-  --slide-ease: cubic-bezier(.22,1,.36,1);
+ --slide-duration: 2000ms;
+ --slide-ease: cubic-bezier(.22,1,.36,1);
 }
+
 
 /* Generic slide-in driven by CSS vars */
 .slide-in {
-  opacity: 0;
-  transform: translate(var(--tx, 0), var(--ty, 0));
-  animation: slideIn var(--slide-duration) var(--slide-ease) forwards;
-  animation-delay: calc(var(--i, 0) * var(--slide-stagger));
-  will-change: opacity, transform;
+ opacity: 0;
+ transform: translate(var(--tx, 0), var(--ty, 0));
+ animation: slideIn var(--slide-duration) var(--slide-ease) forwards;
+ animation-delay: calc(var(--i, 0) * var(--slide-stagger));
+ will-change: opacity, transform;
 }
 
+
 @keyframes slideIn {
-  to { opacity: 1; transform: translate(0, 0); }
+ to { opacity: 1; transform: translate(0, 0); }
 }
+
 
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .slide-in {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-  
-}
+ .slide-in {
+   opacity: 1;
+   transform: none;
+   animation: none;
+ }
+ }
 
 
 
 
 
 
-  </style>
+
+
+
+
+
+
+ </style>
 </head>
 <body>
-  <header style=" background: transparent;">
-    <div style="max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;">
-      <div id="hello" style="font-weight:700; color: var(--card)"></div>
-  
+ <header style=" background: transparent;">
+   <div style="max-width:1400px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px;">
+     <div id="hello" style="font-weight:700; color: var(--card)"></div>
       <div style="margin-left:auto; display:flex; align-items:center; gap:8px;">
-        <div class="menu-wrap">
-          <button id="menuBtn" class="menu-btn" aria-haspopup="true" aria-expanded="false">☰ Menu</button>
-          <div id="menu" class="menu" role="menu">
-            
-            <div class="menu-item" id="safeItem">
-              <label>force overlay-only</label>
-              <div id="safeSwitch" class="switch" aria-hidden="true"></div>
-            </div>
-            <hr/>
-            <div class="menu-item" id="tutorialItem">
-              <label>Open tutorial</label>
-              <span>❓</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
-  
-  
-  <main class="container urow">
-    <!-- LEFT: upload & batch controls -->
-    <section class="card">
-      <div id="dropzone" class="dropzone">
-        <strong>Drag & Drop</strong> your image here<br/>
-        <span class="muted">or click to browse</span>
-        <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
-      </div>
-      <!-- Camera trigger (under Drag & Drop) -->
+       <div class="menu-wrap">
+         <button id="menuBtn" class="menu-btn" aria-haspopup="true" aria-expanded="false">☰ Menu</button>
+         <div id="menu" class="menu" role="menu">
+          
+           <div class="menu-item" id="safeItem">
+             <label>force overlay-only</label>
+             <div id="safeSwitch" class="switch" aria-hidden="true"></div>
+           </div>
+           <hr/>
+           <div class="menu-item" id="tutorialItem">
+             <label>Open tutorial</label>
+             <span>❓</span>
+           </div>
+         </div>
+       </div>
+     </div>
+   </div>
+ </header>
+ 
+ <main class="container urow">
+   <!-- LEFT: upload & batch controls -->
+   <section class="card">
+     <div id="dropzone" class="dropzone">
+       <strong>Drag & Drop</strong> your image here<br/>
+       <span class="muted">or click to browse</span>
+       <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+     </div>
+     <!-- Camera trigger (under Drag & Drop) -->
+
 
 <div style="margin-top:10px; text-align:center;">
-  <button id="openCameraBtn" class="btn ghost" type="button">📷 Take a photo</button>
-  <button id="runBtn" disabled>
-    <span class="btn ghost" style="display:none" id="spin"></span>
-    Inspire me!
-  </button>
+ <button id="openCameraBtn" class="btn ghost" type="button">📷 Take a photo</button>
+ <button id="runBtn" disabled>
+   <span class="btn ghost" style="display:none" id="spin"></span>
+   Generate!
+ </button>
 </div>
+
+
 
 
 <!-- Progress UI for the 5 presets -->
 <div class="progress-wrap" id="pwrap"><div class="progress-bar" id="pbar"></div></div>
 <div class="progress-meta" id="pmeta">
-  <span id="ptext">Preparing…</span><span id="eta" style="float:right;"></span>
+ <span id="ptext">Preparing…</span><span id="eta" style="float:right;"></span>
 </div>
 
 
 
-      <div class="preview" id="preview"></div>
-      <div class="actions">
-        <input id="extraPrompt" style="background: var(--bg); " type="text" placeholder="(Optional) extra instructions / themes"/>
-       
-      </div>
 
 
 
-      
+     <div class="preview" id="preview"></div>
+     <div class="actions">
+       <input id="extraPrompt" style="background: var(--bg); " type="text" placeholder="(Optional) extra instructions / themes"/>
+     
+     </div>
 
-      
-    </section>
 
-    <!-- RIGHT: results -->
-    <section class="card">
-      <h3 style="margin-top:0">Results</h3>
-      <div id="results" class="grid"></div>
-    </section>
-  </main>
 
-  <!-- Lightbox -->
-  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog">
-    <div class="lightbox-content">
-      <button class="lightbox-close" id="lbClose" aria-label="Close">×</button>
-      <img id="lbImg" alt="Expanded result" />
-    </div>
-  </div>
 
-  <!-- Custom Prompt Modal -->
-  <div class="modal" id="customModal" aria-modal="true" role="dialog">
-    <div class="modal-card">
-      <div class="modal-header">
-        <div class="modal-title">Custom Overlay</div>
-        <button id="modalClose" class="lightbox-close" aria-label="Close">×</button>
-      </div>
 
-      <div class="muted" style="margin:6px 0 12px">
-        This adds new elements on top of your uploaded image without changing existing pixels (unless you state otherwise).
-      </div>
 
-      <div class="custom-card">
-        <div class="row">
-          <!-- MEDIUM: dropdown + optional custom -->
-          <div>
-            <label class="small" for="custMediumSel">Medium</label>
-            <select id="custMediumSel">
-              <option value="magazine imagery">magazine imagery</option>
-              <option value="acrylic paint">acrylic paint</option>
-              <option value="drawing">drawing</option>
-              <option value="cut outs">cut outs</option>
-              <option value="felt">felt</option>
-              <option value="__custom">Custom…</option>
-            </select>
-          </div>
-          <div id="custMediumCustomWrap" class="hidden">
-            <label class="small" for="custMediumCustom">Custom medium</label>
-            <input id="custMediumCustom" type="text" placeholder="Describe your medium…" />
-          </div>
-        </div>
+    
 
-        <div class="row">
-          <!-- THEME -->
-          <div>
-            <label class="small" for="custTheme">Theme</label>
-            <input id="custTheme" type="text" placeholder="e.g., botanical, architectural…" />
-          </div>
-          <!-- style & constraints removed -->
-        </div>
 
-        <div>
-          <label class="small" for="custExtra">Extra details</label>
-          <textarea id="custExtra" rows="3" placeholder="What to add, where, scale, colors, textures…"></textarea>
-        </div>
+    
+   </section>
 
-        <div class="actions">
-          <button id="customBtn" disabled>
-            <span class="spinner" style="display:none" id="cspin"></span>
-            Generate Custom
-          </button>
-          <span class="small">Uses the same uploaded image</span>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <div id="tutorialModal" class="tutorial-modal" aria-modal="true" role="dialog">
-    <div class="tutorial-card">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <h3 style="margin:0;">Quick Tutorial</h3>
-        <button id="tutorialClose" class="tutorial-close" aria-label="Close">×</button>
-      </div>
-      <ul>
-        <li>Upload or drag & drop an image.</li>
-        <li>Click <strong>Generate!</strong> to create 5 overlay presets.</li>
-        <li>Click a blurred card to reveal it; reveal all 5 to unlock <em>Custom overlay</em>.</li>
-        <li>Use <strong>Safe mode</strong> to force overlay-only prompts (no base edits).</li>
-      </ul>
-    </div>
-  </div>
+   <!-- RIGHT: results -->
+   <section class="card">
+     <h3 style="margin-top:0">Results</h3>
+     <div id="results" class="grid"></div>
+   </section>
+ </main>
 
-  <!-- Camera Modal -->
+
+ <!-- Lightbox -->
+ <div class="lightbox" id="lightbox" aria-modal="true" role="dialog">
+   <div class="lightbox-content">
+     <button class="lightbox-close" id="lbClose" aria-label="Close">×</button>
+     <img id="lbImg" alt="Expanded result" />
+   </div>
+ </div>
+
+
+ <!-- Custom Prompt Modal -->
+ <div class="modal" id="customModal" aria-modal="true" role="dialog">
+   <div class="modal-card">
+     <div class="modal-header">
+       <div class="modal-title">Custom Overlay</div>
+       <button id="modalClose" class="lightbox-close" aria-label="Close">×</button>
+     </div>
+
+
+     <div class="muted" style="margin:6px 0 12px">
+       This adds new elements on top of your uploaded image without changing existing pixels (unless you state otherwise).
+     </div>
+
+
+     <div class="custom-card">
+       <div class="row">
+         <!-- MEDIUM: dropdown + optional custom -->
+         <div>
+           <label class="small" for="custMediumSel">Medium</label>
+           <select id="custMediumSel">
+             <option value="magazine imagery">magazine imagery</option>
+             <option value="acrylic paint">acrylic paint</option>
+             <option value="drawing">drawing</option>
+             <option value="cut outs">cut outs</option>
+             <option value="felt">felt</option>
+             <option value="__custom">Custom…</option>
+           </select>
+         </div>
+         <div id="custMediumCustomWrap" class="hidden">
+           <label class="small" for="custMediumCustom">Custom medium</label>
+           <input id="custMediumCustom" type="text" placeholder="Describe your medium…" />
+         </div>
+       </div>
+
+
+       <div class="row">
+         <!-- THEME -->
+         <div>
+           <label class="small" for="custTheme">Theme</label>
+           <input id="custTheme" type="text" placeholder="e.g., botanical, architectural…" />
+         </div>
+         <!-- style & constraints removed -->
+       </div>
+
+
+       <div>
+         <label class="small" for="custExtra">Extra details</label>
+         <textarea id="custExtra" rows="3" placeholder="What to add, where, scale, colors, textures…"></textarea>
+       </div>
+
+
+       <div class="actions">
+         <button id="customBtn" disabled>
+           <span class="spinner" style="display:none" id="cspin"></span>
+           Generate Custom
+         </button>
+         <span class="small">Uses the same uploaded image</span>
+       </div>
+     </div>
+   </div>
+ </div>
+
+
+ <div id="tutorialModal" class="tutorial-modal" aria-modal="true" role="dialog">
+   <div class="tutorial-card">
+     <div style="display:flex; align-items:center; gap:8px;">
+       <h3 style="margin:0;">Quick Tutorial</h3>
+       <button id="tutorialClose" class="tutorial-close" aria-label="Close">×</button>
+     </div>
+     <ul>
+       <li>Upload or drag & drop an image.</li>
+       <li>Click <strong>Generate!</strong> to create 5 overlay presets.</li>
+       <li>Click a blurred card to reveal it; reveal all 5 to unlock <em>Custom overlay</em>.</li>
+       <li>Use <strong>Safe mode</strong> to force overlay-only prompts (no base edits).</li>
+     </ul>
+   </div>
+ </div>
+
+
+ <!-- Camera Modal -->
 <div id="cameraModal" class="modal" aria-modal="true" role="dialog">
-  <div class="modal-card" style="max-width:760px;">
-    <div class="modal-header">
-      <div class="modal-title">Take a Photo</div>
-      <button id="cameraClose" class="lightbox-close" aria-label="Close">×</button>
-    </div>
+ <div class="modal-card" style="max-width:760px;">
+   <div class="modal-header">
+     <div class="modal-title">Take a Photo</div>
+     <button id="cameraClose" class="lightbox-close" aria-label="Close">×</button>
+   </div>
 
-    <div class="muted" style="margin:6px 0 12px">
-      Grant camera permission to capture an image directly.
-    </div>
 
-    <div style="display:grid; gap:12px;">
-      <!-- Live preview -->
-      <video id="camVideo" autoplay playsinline style="width:100%; border-radius:12px; border:1px solid var(--border); background:#000"></video>
-      <!-- Captured preview (hidden until capture) -->
-      <canvas id="camCanvas" style="display:none; width:100%; border-radius:12px; border:1px solid var(--border); background:#000"></canvas>
+   <div class="muted" style="margin:6px 0 12px">
+     Grant camera permission to capture an image directly.
+   </div>
 
-      <div class="actions" style="justify-content:flex-end;">
-        <button id="camStartBtn" class="btn ghost" type="button">Start Camera</button>
-        <button id="camCaptureBtn" class="btn" type="button" disabled>Capture</button>
-        <button id="camRetakeBtn" class="btn ghost" type="button" style="display:none;">Retake</button>
-        <button id="camUseBtn" class="btn" type="button" style="display:none;">Use Photo</button>
-      </div>
 
-      <div id="camError" class="small" style="color:var(--warn); display:none;"></div>
-    </div>
-  </div>
+   <div style="display:grid; gap:12px;">
+     <!-- Live preview -->
+     <video id="camVideo" autoplay playsinline style="width:100%; border-radius:12px; border:1px solid var(--border); background:#000"></video>
+     <!-- Captured preview (hidden until capture) -->
+     <canvas id="camCanvas" style="display:none; width:100%; border-radius:12px; border:1px solid var(--border); background:#000"></canvas>
+
+
+     <div class="actions" style="justify-content:flex-end;">
+       <button id="camStartBtn" class="btn ghost" type="button">Start Camera</button>
+       <button id="camCaptureBtn" class="btn" type="button" disabled>Capture</button>
+       <button id="camRetakeBtn" class="btn ghost" type="button" style="display:none;">Retake</button>
+       <button id="camUseBtn" class="btn" type="button" style="display:none;">Use Photo</button>
+     </div>
+
+
+     <div id="camError" class="small" style="color:var(--warn); display:none;"></div>
+   </div>
+ </div>
 </div>
 
-  
 
-  <script>
 
-     // Change to your real worker URL:
-  const API_BASE = "https://collage-worker.ac138.workers.dev";
+
+ <script>
+
+
+    // Change to your real worker URL:
+ const API_BASE = "https://collage-worker.ac138.workers.dev";
+
 
 // Optional: dev/prod auto-switch
 // If you're running a local server for testing, keep using relative paths
@@ -401,61 +449,76 @@ const isLocal = location.hostname === "localhost" || location.hostname === "127.
 const api = (path) => isLocal ? path : `${API_BASE}${path}`;
 
 
-    const dz = document.getElementById('dropzone');
-    const fi = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
-    const runBtn = document.getElementById('runBtn');
-    const results = document.getElementById('results');
-    const spin = document.getElementById('spin');
-    const extraPrompt = document.getElementById('extraPrompt');
 
-    // progress elements for presets
-    const pwrap = document.getElementById('pwrap');
-    const pbar  = document.getElementById('pbar');
-    const pmeta = document.getElementById('pmeta');
-    const ptext = document.getElementById('ptext');
-    const etaEl = document.getElementById('eta');
 
-    // lightbox
-    const lightbox = document.getElementById('lightbox');
-    const lbImg = document.getElementById('lbImg');
-    const lbClose = document.getElementById('lbClose');
+   const dz = document.getElementById('dropzone');
+   const fi = document.getElementById('fileInput');
+   const preview = document.getElementById('preview');
+   const runBtn = document.getElementById('runBtn');
+   const results = document.getElementById('results');
+   const spin = document.getElementById('spin');
+   const extraPrompt = document.getElementById('extraPrompt');
 
-    // custom modal + inputs
-    const customModal = document.getElementById('customModal');
-    const modalClose = document.getElementById('modalClose');
-    const customBtn = document.getElementById('customBtn');
-    const cspin = document.getElementById('cspin');
 
-    const custMediumSel = document.getElementById('custMediumSel');
-    const custMediumCustomWrap = document.getElementById('custMediumCustomWrap');
-    const custMediumCustom = document.getElementById('custMediumCustom');
+   // progress elements for presets
+   const pwrap = document.getElementById('pwrap');
+   const pbar  = document.getElementById('pbar');
+   const pmeta = document.getElementById('pmeta');
+   const ptext = document.getElementById('ptext');
+   const etaEl = document.getElementById('eta');
 
-    const custTheme = document.getElementById('custTheme');
-    const custExtra = document.getElementById('custExtra');
 
-    
+   // lightbox
+   const lightbox = document.getElementById('lightbox');
+   const lbImg = document.getElementById('lbImg');
+   const lbClose = document.getElementById('lbClose');
 
-    let file = null;
 
-    // track reveals
-    const revealed = new Set();
-    let totalPresets = 5;
-    let currentRequestId = 0;
+   // custom modal + inputs
+   const customModal = document.getElementById('customModal');
+   const modalClose = document.getElementById('modalClose');
+   const customBtn = document.getElementById('customBtn');
+   const cspin = document.getElementById('cspin');
 
-  let inFlight = false;
-  let lastController = null;
 
-  // --------- Safe mode suffix (keep in sync with server.js OVERLAY_ONLY_SUFFIX) ---------
-  const OVERLAY_ONLY_SUFFIX =
-  "STRICT REQUIREMENT: Overlay new elements on top of the current image only. " +
-  "Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. " +
-  "Preserve all original composition, lighting, textures, edges, and geometry. " +
-  "No global filters. No inpainting outside added elements. No background edits. " +
-  "Blend additions believably with soft shadows/occlusion. No text, nudity, logos, brands, or faces.";
+   const custMediumSel = document.getElementById('custMediumSel');
+   const custMediumCustomWrap = document.getElementById('custMediumCustomWrap');
+   const custMediumCustom = document.getElementById('custMediumCustom');
+
+
+   const custTheme = document.getElementById('custTheme');
+   const custExtra = document.getElementById('custExtra');
+
+
+  
+
+
+   let file = null;
+
+
+   // track reveals
+   const revealed = new Set();
+   let totalPresets = 5;
+   let currentRequestId = 0;
+
+
+ let inFlight = false;
+ let lastController = null;
+
+
+ // --------- Safe mode suffix (keep in sync with server.js OVERLAY_ONLY_SUFFIX) ---------
+ const OVERLAY_ONLY_SUFFIX =
+ "STRICT REQUIREMENT: Overlay new elements on top of the current image only. " +
+ "Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. " +
+ "Preserve all original composition, lighting, textures, edges, and geometry. " +
+ "No global filters. No inpainting outside added elements. No background edits. " +
+ "Blend additions believably with soft shadows/occlusion. No text, logos, brands, or faces.";
+
 
 // --------- Menu / Toggles state ---------
 let safeMode = localStorage.getItem('safeMode') === '1';
+
+
 
 
 const menuBtn = document.getElementById('menuBtn');
@@ -465,6 +528,9 @@ const safeSwitch = document.getElementById('safeSwitch');
 const tutorialItem = document.getElementById('tutorialItem');
 const tutorialModal = document.getElementById('tutorialModal');
 const tutorialClose = document.getElementById('tutorialClose');
+
+
+
 
 
 
@@ -480,104 +546,120 @@ const camRetakeBtn  = document.getElementById('camRetakeBtn');
 const camUseBtn     = document.getElementById('camUseBtn');
 const camError      = document.getElementById('camError');
 
+
 let camStream = null;
 let camBlob   = null;
 
+
 // Helpers
 function openCamModal() {
-  cameraModal.classList.add('open');
-  camError.style.display = 'none';
-  camCanvas.style.display = 'none';
-  camVideo.style.display  = 'block';
-  camCaptureBtn.disabled  = !camStream;
-  camRetakeBtn.style.display = 'none';
-  camUseBtn.style.display    = 'none';
+ cameraModal.classList.add('open');
+ camError.style.display = 'none';
+ camCanvas.style.display = 'none';
+ camVideo.style.display  = 'block';
+ camCaptureBtn.disabled  = !camStream;
+ camRetakeBtn.style.display = 'none';
+ camUseBtn.style.display    = 'none';
 }
+
 
 function closeCamModal() {
-  cameraModal.classList.remove('open');
-  stopCamera();
-  camBlob = null;
+ cameraModal.classList.remove('open');
+ stopCamera();
+ camBlob = null;
 }
+
 
 async function startCamera() {
-  try {
-    stopCamera();
-    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-    camVideo.srcObject = camStream;
-    camCaptureBtn.disabled = false;
-  } catch (err) {
-    camError.textContent = 'Unable to access camera: ' + (err.message || err);
-    camError.style.display = 'block';
-  }
+ try {
+   stopCamera();
+   camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+   camVideo.srcObject = camStream;
+   camCaptureBtn.disabled = false;
+ } catch (err) {
+   camError.textContent = 'Unable to access camera: ' + (err.message || err);
+   camError.style.display = 'block';
+ }
 }
+
 
 function stopCamera() {
-  if (camStream) {
-    camStream.getTracks().forEach(t => t.stop());
-    camStream = null;
-  }
-  camVideo.srcObject = null;
+ if (camStream) {
+   camStream.getTracks().forEach(t => t.stop());
+   camStream = null;
+ }
+ camVideo.srcObject = null;
 }
+
 
 function captureFrame() {
-  if (!camStream) return;
-  const v = camVideo;
-  const c = camCanvas;
-  const ctx = c.getContext('2d');
+ if (!camStream) return;
+ const v = camVideo;
+ const c = camCanvas;
+ const ctx = c.getContext('2d');
 
-  // Size canvas to the video’s actual resolution
-  const w = v.videoWidth || 1280;
-  const h = v.videoHeight || 960;
-  c.width = w;
-  c.height = h;
 
-  ctx.drawImage(v, 0, 0, w, h);
-  camCanvas.style.display = 'block';
-  camVideo.style.display  = 'none';
+ // Size canvas to the video’s actual resolution
+ const w = v.videoWidth || 1280;
+ const h = v.videoHeight || 960;
+ c.width = w;
+ c.height = h;
 
-  // Toggle action buttons
-  camRetakeBtn.style.display = 'inline-flex';
-  camUseBtn.style.display    = 'inline-flex';
-  camCaptureBtn.disabled     = true;
 
-  // Prepare blob for later
-  camCanvas.toBlob((b) => { camBlob = b; }, 'image/png', 0.95);
+ ctx.drawImage(v, 0, 0, w, h);
+ camCanvas.style.display = 'block';
+ camVideo.style.display  = 'none';
+
+
+ // Toggle action buttons
+ camRetakeBtn.style.display = 'inline-flex';
+ camUseBtn.style.display    = 'inline-flex';
+ camCaptureBtn.disabled     = true;
+
+
+ // Prepare blob for later
+ camCanvas.toBlob((b) => { camBlob = b; }, 'image/png', 0.95);
 }
+
 
 function retake() {
-  camCanvas.style.display = 'none';
-  camVideo.style.display  = 'block';
-  camRetakeBtn.style.display = 'none';
-  camUseBtn.style.display    = 'none';
-  camCaptureBtn.disabled     = !camStream;
-  camBlob = null;
+ camCanvas.style.display = 'none';
+ camVideo.style.display  = 'block';
+ camRetakeBtn.style.display = 'none';
+ camUseBtn.style.display    = 'none';
+ camCaptureBtn.disabled     = !camStream;
+ camBlob = null;
 }
+
 
 function dataTransferWithFile(file) {
-  // Put the File into the hidden <input type="file"> to keep behavior consistent
-  const dt = new DataTransfer();
-  dt.items.add(file);
-  fi.files = dt.files;
+ // Put the File into the hidden <input type="file"> to keep behavior consistent
+ const dt = new DataTransfer();
+ dt.items.add(file);
+ fi.files = dt.files;
 }
+
 
 function useCapturedPhoto() {
-  if (!camBlob) return;
-  const fileFromCam = new File([camBlob], 'camera-photo.png', { type: 'image/png' });
-  // integrate with existing pipeline
-  file = fileFromCam;
-  dataTransferWithFile(fileFromCam);
-  showPreview(fileFromCam);
-  runBtn.disabled = !file;
-  customBtn && (customBtn.disabled = true); // keep your gating
+ if (!camBlob) return;
+ const fileFromCam = new File([camBlob], 'camera-photo.png', { type: 'image/png' });
+ // integrate with existing pipeline
+ file = fileFromCam;
+ dataTransferWithFile(fileFromCam);
+ showPreview(fileFromCam);
+ runBtn.disabled = !file;
+ customBtn && (customBtn.disabled = true); // keep your gating
 
-  closeCamModal();
+
+ closeCamModal();
 }
+
 
 // ===== Event wiring =====
 openCameraBtn.addEventListener('click', openCamModal);
 cameraClose.addEventListener('click', closeCamModal);
 cameraModal.addEventListener('click', (e) => { if (e.target === cameraModal) closeCamModal(); });
+
 
 camStartBtn.addEventListener('click', startCamera);
 camCaptureBtn.addEventListener('click', captureFrame);
@@ -585,537 +667,620 @@ camRetakeBtn.addEventListener('click', retake);
 camUseBtn.addEventListener('click', useCapturedPhoto);
 // Open/close dropdown
 menuBtn.addEventListener('click', () => {
-  const open = !menu.classList.contains('open');
-  menu.classList.toggle('open', open);
-  menuBtn.setAttribute('aria-expanded', String(open));
+ const open = !menu.classList.contains('open');
+ menu.classList.toggle('open', open);
+ menuBtn.setAttribute('aria-expanded', String(open));
 });
 document.addEventListener('click', (e) => {
-  if (!menu.contains(e.target) && e.target !== menuBtn) {
-    menu.classList.remove('open');
-    menuBtn.setAttribute('aria-expanded', 'false');
-  }
+ if (!menu.contains(e.target) && e.target !== menuBtn) {
+   menu.classList.remove('open');
+   menuBtn.setAttribute('aria-expanded', 'false');
+ }
 });
+
 
 // Initialize switches
 function renderSwitchStates() {
-  safeSwitch.classList.toggle('on', safeMode);
+ safeSwitch.classList.toggle('on', safeMode);
 }
 renderSwitchStates();
 
 
 
+
+
+
 // Safe mode toggle
 safeItem.addEventListener('click', () => {
-  safeMode = !safeMode;
-  localStorage.setItem('safeMode', safeMode ? '1' : '0');
-  renderSwitchStates();
+ safeMode = !safeMode;
+ localStorage.setItem('safeMode', safeMode ? '1' : '0');
+ renderSwitchStates();
 });
+
 
 // Tutorial open/close
 tutorialItem.addEventListener('click', () => {
-  tutorialModal.classList.add('open');
-  menu.classList.remove('open');
-  menuBtn.setAttribute('aria-expanded', 'false');
+ tutorialModal.classList.add('open');
+ menu.classList.remove('open');
+ menuBtn.setAttribute('aria-expanded', 'false');
 });
 tutorialClose.addEventListener('click', () => tutorialModal.classList.remove('open'));
 tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal) tutorialModal.classList.remove('open'); });
 
-  // --- Setup from localStorage ---
+
+ // --- Setup from localStorage ---
 (function bootUserAndTheme(){
-  const name  = localStorage.getItem('userName');
-  const theme = localStorage.getItem('theme') || 'ocean';
+ const name  = localStorage.getItem('userName');
+ const theme = localStorage.getItem('theme') || 'ocean';
 
-  // If no setup, send back to landing
-  if (!name) {
-    window.location.href = 'index.html';
-    return;
-  }
 
-  document.documentElement.setAttribute('data-theme', theme);
+ // If no setup, send back to landing
+ if (!name) {
+   window.location.href = 'index.html';
+   return;
+ }
 
-  const hello = document.getElementById('hello');
-  const themeSel = document.getElementById('themeSel');
-  const resetSetup = document.getElementById('resetSetup');
 
-  if (hello) hello.textContent = `Hi, ${name} ✦ let’s make something!`;
-  if (themeSel) {
-    themeSel.value = theme;
-    themeSel.addEventListener('change', () => {
-      const t = themeSel.value;
-      document.documentElement.setAttribute('data-theme', t);
-      localStorage.setItem('theme', t);
-    });
-  }
+ document.documentElement.setAttribute('data-theme', theme);
 
-  if (resetSetup) {
-    resetSetup.addEventListener('click', () => {
-      // keep theme or clear both? Here we clear both for a fresh start.
-      localStorage.removeItem('userName');
-      // optionally keep theme: comment next line if you want to preserve theme
-      // localStorage.removeItem('theme');
-      window.location.href = 'index.html';
-    });
-  }
+
+ const hello = document.getElementById('hello');
+ const themeSel = document.getElementById('themeSel');
+ const resetSetup = document.getElementById('resetSetup');
+
+
+ if (hello) hello.textContent = `Hi, ${name} ✦ let’s make something!`;
+ if (themeSel) {
+   themeSel.value = theme;
+   themeSel.addEventListener('change', () => {
+     const t = themeSel.value;
+     document.documentElement.setAttribute('data-theme', t);
+     localStorage.setItem('theme', t);
+   });
+ }
+
+
+ if (resetSetup) {
+   resetSetup.addEventListener('click', () => {
+     // keep theme or clear both? Here we clear both for a fresh start.
+     localStorage.removeItem('userName');
+     // optionally keep theme: comment next line if you want to preserve theme
+     // localStorage.removeItem('theme');
+     window.location.href = 'index.html';
+   });
+ }
 })();
 
 
+
+
 function uniqueResults(items) {
-  const seenSlug = new Set();
-  const seenImg = new Set();
-  const out = [];
-  for (let i = 0; i < items.length; i++) {
-    const it = items[i] || {};
-    const slugKey = (it.slug ? String(it.slug) : `idx-${i}`).trim().toLowerCase();
-    const imgKey = (it.dataUrl ? it.dataUrl.slice(0, 80) : `noimg-${i}`);
-    if (seenSlug.has(slugKey) || seenImg.has(imgKey)) continue;
-    seenSlug.add(slugKey);
-    seenImg.add(imgKey);
-    out.push(it);
-  }
-  return out;
+ const seenSlug = new Set();
+ const seenImg = new Set();
+ const out = [];
+ for (let i = 0; i < items.length; i++) {
+   const it = items[i] || {};
+   const slugKey = (it.slug ? String(it.slug) : `idx-${i}`).trim().toLowerCase();
+   const imgKey = (it.dataUrl ? it.dataUrl.slice(0, 80) : `noimg-${i}`);
+   if (seenSlug.has(slugKey) || seenImg.has(imgKey)) continue;
+   seenSlug.add(slugKey);
+   seenImg.add(imgKey);
+   out.push(it);
+ }
+ return out;
 }
+
+
 
 
 function uniqueBySlug(items) {
-  const seen = new Set();
-  return items.filter((it, i) => {
-    // fall back to index label if no slug
-    const key = (it.slug ? it.slug : `idx-${i}`).toLowerCase();
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+ const seen = new Set();
+ return items.filter((it, i) => {
+   // fall back to index label if no slug
+   const key = (it.slug ? it.slug : `idx-${i}`).toLowerCase();
+   if (seen.has(key)) return false;
+   seen.add(key);
+   return true;
+ });
 }
 
 
-    function showPreview(f) {
-      preview.innerHTML = '';
-      if (!f) return;
-      const img = document.createElement('img');
-      img.src = URL.createObjectURL(f);
-      img.onload = () => URL.revokeObjectURL(img.src);
-      preview.appendChild(img);
-    }
 
-    dz.addEventListener('click', () => fi.click());
-    fi.addEventListener('change', () => {
-      file = fi.files[0] || null;
-      showPreview(file);
-      runBtn.disabled = !file;
-      customBtn.disabled = true; // locked until all 5 revealed
-    });
 
-    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
-    dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
-    dz.addEventListener('drop', (e) => {
-      e.preventDefault(); dz.classList.remove('dragover');
-      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-        file = e.dataTransfer.files[0];
-        fi.files = e.dataTransfer.files;
-        showPreview(file);
-        runBtn.disabled = !file;
-        customBtn.disabled = true;
-      }
-    });
+   function showPreview(f) {
+     preview.innerHTML = '';
+     if (!f) return;
+     const img = document.createElement('img');
+     img.src = URL.createObjectURL(f);
+     img.onload = () => URL.revokeObjectURL(img.src);
+     preview.appendChild(img);
+   }
 
-    // progress (estimate) for the 5 presets
-    const DEFAULT_STYLE_COUNT = 5;
-    const AVG_SECONDS_PER_STYLE = 17;
-    let progressTimer = null, startTs = 0;
-    function showProgressUI(show){ pwrap.style.display = show ? 'block':'none'; pmeta.style.display = show ? 'block':'none'; }
-    function setBar(pct){ pbar.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
-    function secondsToHMS(s){ if(s<60) return `${Math.max(0, Math.ceil(s))}s`; const m=Math.floor(s/60), r=Math.ceil(s%60); return `${m}m ${r}s`; }
-    function startProgress(estCount=DEFAULT_STYLE_COUNT){
-      showProgressUI(true); setBar(0); ptext.textContent='Generating…'; etaEl.textContent=''; etaEl.className='';
-      startTs = Date.now(); const estTotal = estCount * AVG_SECONDS_PER_STYLE; let eased=0;
-      function tick(){
-        const elapsed=(Date.now()-startTs)/1000, left=Math.max(0, estTotal-elapsed);
-        const target=Math.min(90,(elapsed/estTotal)*100); eased += (target-eased)*0.07; setBar(eased);
-        etaEl.textContent=`~${secondsToHMS(left)} remaining`; etaEl.className = left<=10?'eta-ok':(left>20?'eta-slow':'');
-        progressTimer = requestAnimationFrame(tick);
-      }
-      progressTimer = requestAnimationFrame(tick);
-    }
-    function finishProgress(actualCount){
-      if(progressTimer) cancelAnimationFrame(progressTimer);
-      setBar(100); ptext.textContent=`Done — generated ${actualCount} image${actualCount===1?'':'s'}`; etaEl.textContent='';
-      setTimeout(()=>showProgressUI(false), 900);
-    }
 
-    // Lightbox
-    function openLightbox(src){ lbImg.src = src; lightbox.classList.add('open'); document.body.style.overflow='hidden'; }
-    function closeLightbox(){ lightbox.classList.remove('open'); lbImg.src = ''; document.body.style.overflow=''; }
-    lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) closeLightbox(); });
-    lbClose.addEventListener('click', closeLightbox);
-    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lightbox.classList.contains('open')) closeLightbox(); });
+   dz.addEventListener('click', () => fi.click());
+   fi.addEventListener('change', () => {
+     file = fi.files[0] || null;
+     showPreview(file);
+     runBtn.disabled = !file;
+     customBtn.disabled = true; // locked until all 5 revealed
+   });
 
-    // PLUS card helpers (always last)
-    function createPlusCard(locked=true) {
-      const wrap = document.createElement('div');
-      wrap.className = 'plus-card' + (locked ? ' disabled' : '');
-      wrap.setAttribute('data-plus', 'true');
 
-      const inner = document.createElement('div');
-      inner.className = 'plus-inner';
+   dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('dragover'); });
+   dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+   dz.addEventListener('drop', (e) => {
+     e.preventDefault(); dz.classList.remove('dragover');
+     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+       file = e.dataTransfer.files[0];
+       fi.files = e.dataTransfer.files;
+       showPreview(file);
+       runBtn.disabled = !file;
+       customBtn.disabled = true;
+     }
+   });
 
-      const sym = document.createElement('div'); sym.className = 'plus-symbol'; sym.textContent = locked ? '🔒' : '+';
-      const cap = document.createElement('div'); cap.className = 'plus-caption';
-      cap.textContent = locked ? 'Reveal all 5 to unlock custom' : 'Custom overlay';
 
-      const loader = document.createElement('div');
-      loader.className = 'plus-loading';
-      loader.innerHTML = `
-        <div class="plus-loading-rail">
-          <div class="plus-loading-bar" id="plusBar"></div>
-        </div>
-        <div class="small" style="text-align:center;margin-top:6px;">Generating…</div>
-      `;
+   // progress (estimate) for the 5 presets
+   const DEFAULT_STYLE_COUNT = 5;
+   const AVG_SECONDS_PER_STYLE = 17;
+   let progressTimer = null, startTs = 0;
+   function showProgressUI(show){ pwrap.style.display = show ? 'block':'none'; pmeta.style.display = show ? 'block':'none'; }
+   function setBar(pct){ pbar.style.width = Math.max(0, Math.min(100, pct)) + '%'; }
+   function secondsToHMS(s){ if(s<60) return `${Math.max(0, Math.ceil(s))}s`; const m=Math.floor(s/60), r=Math.ceil(s%60); return `${m}m ${r}s`; }
+   function startProgress(estCount=DEFAULT_STYLE_COUNT){
+     showProgressUI(true); setBar(0); ptext.textContent='Generating…'; etaEl.textContent=''; etaEl.className='';
+     startTs = Date.now(); const estTotal = estCount * AVG_SECONDS_PER_STYLE; let eased=0;
+     function tick(){
+       const elapsed=(Date.now()-startTs)/1000, left=Math.max(0, estTotal-elapsed);
+       const target=Math.min(90,(elapsed/estTotal)*100); eased += (target-eased)*0.07; setBar(eased);
+       etaEl.textContent=`~${secondsToHMS(left)} remaining`; etaEl.className = left<=10?'eta-ok':(left>20?'eta-slow':'');
+       progressTimer = requestAnimationFrame(tick);
+     }
+     progressTimer = requestAnimationFrame(tick);
+   }
+   function finishProgress(actualCount){
+     if(progressTimer) cancelAnimationFrame(progressTimer);
+     setBar(100); ptext.textContent=`Done — generated ${actualCount} image${actualCount===1?'':'s'}`; etaEl.textContent='';
+     setTimeout(()=>showProgressUI(false), 900);
+   }
 
-      inner.appendChild(sym); inner.appendChild(cap); inner.appendChild(loader);
-      wrap.appendChild(inner);
-      wrap.addEventListener('click', () => {
-        if (wrap.classList.contains('disabled')) return;
-        openCustomModal();
-      });
-      return wrap;
-    }
-    function ensurePlusCardAtEnd(locked=true) {
-      const old = results.querySelector('.plus-card');
-      if (old) old.remove();
-      results.appendChild(createPlusCard(locked));
-    }
 
-    // Custom Modal
-    function openCustomModal(){ if (!file) return alert('Upload an image first.'); customModal.classList.add('open'); }
-    function closeCustomModal(){ customModal.classList.remove('open'); }
-    modalClose.addEventListener('click', closeCustomModal);
-    customModal.addEventListener('click', (e)=>{ if (e.target === customModal) closeCustomModal(); });
+   // Lightbox
+   function openLightbox(src){ lbImg.src = src; lightbox.classList.add('open'); document.body.style.overflow='hidden'; }
+   function closeLightbox(){ lightbox.classList.remove('open'); lbImg.src = ''; document.body.style.overflow=''; }
+   lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) closeLightbox(); });
+   lbClose.addEventListener('click', closeLightbox);
+   window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lightbox.classList.contains('open')) closeLightbox(); });
 
-    // Medium dropdown toggles custom input
-    custMediumSel.addEventListener('change', () => {
-      const isCustom = custMediumSel.value === '__custom';
-      custMediumCustomWrap.classList.toggle('hidden', !isCustom);
-      if (isCustom) custMediumCustom.focus();
-    });
 
-    function composeCustomPrompt() {
-      const bits = [];
-      let medium = custMediumSel.value;
-      if (medium === '__custom') {
-        const customVal = custMediumCustom.value.trim();
-        if (customVal) medium = customVal;
-      }
-      if (medium) bits.push(`Medium of addition: ${medium}.`);
+   // PLUS card helpers (always last)
+   function createPlusCard(locked=true) {
+     const wrap = document.createElement('div');
+     wrap.className = 'plus-card' + (locked ? ' disabled' : '');
+     wrap.setAttribute('data-plus', 'true');
 
-      const theme  = custTheme.value.trim();
-      const extra  = custExtra.value.trim();
-      if (theme)  bits.push(`Theme: ${theme}.`);
-      if (extra)  bits.push(extra);
 
-      // Overlay-only guardrail
-      bits.push("STRICT REQUIREMENT: Overlay new elements on top of the current image only. Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. Preserve all original composition, lighting, textures, edges, and geometry. No global filters. No inpainting outside added elements. No background edits. Blend additions believably with soft shadows/occlusion. No text, logos, brands, or faces.");
-      return bits.join(' ');
-    }
+     const inner = document.createElement('div');
+     inner.className = 'plus-inner';
 
-    // Loading bar control on the + card
-    let plusTimer = null, plusStart = 0;
-    const AVG_SECONDS_PER_CUSTOM = 12;
 
-    function setPlusLoading(on) {
-      const plus = results.querySelector('.plus-card');
-      if (!plus) return;
+     const sym = document.createElement('div'); sym.className = 'plus-symbol'; sym.textContent = locked ? '🔒' : '+';
+     const cap = document.createElement('div'); cap.className = 'plus-caption';
+     cap.textContent = locked ? 'Reveal all 5 to unlock custom' : 'Custom overlay';
 
-      const bar = plus.querySelector('#plusBar');
 
-      if (on) {
-        plus.classList.add('loading');
-        plusStart = Date.now();
-        let eased = 0;
+     const loader = document.createElement('div');
+     loader.className = 'plus-loading';
+     loader.innerHTML = `
+       <div class="plus-loading-rail">
+         <div class="plus-loading-bar" id="plusBar"></div>
+       </div>
+       <div class="small" style="text-align:center;margin-top:6px;">Generating…</div>
+     `;
 
-        function tick() {
-          const elapsed = (Date.now() - plusStart) / 1000;
-          const est = AVG_SECONDS_PER_CUSTOM;
-          const target = Math.min(90, (elapsed / est) * 100);
-          eased += (target - eased) * 0.15;
-          if (bar) bar.style.width = `${eased}%`;
-          plusTimer = requestAnimationFrame(tick);
-        }
-        plusTimer = requestAnimationFrame(tick);
-      } else {
-        if (plusTimer) cancelAnimationFrame(plusTimer);
-        if (bar) bar.style.width = '0%';
-        plus.classList.remove('loading');
-      }
-    }
 
-    // --- Rendering presets with blur veil & reveal tracking ---
-    function renderLockedResult(index, dataUrl, label) {
-  const card = document.createElement('div');
-  card.className = 'result locked';
-  card.dataset.idx = String(index);
+     inner.appendChild(sym); inner.appendChild(cap); inner.appendChild(loader);
+     wrap.appendChild(inner);
+     wrap.addEventListener('click', () => {
+       if (wrap.classList.contains('disabled')) return;
+       openCustomModal();
+     });
+     return wrap;
+   }
+   function ensurePlusCardAtEnd(locked=true) {
+     const old = results.querySelector('.plus-card');
+     if (old) old.remove();
+     results.appendChild(createPlusCard(locked));
+   }
 
-  const base = document.createElement('img');
-  base.className = 'base';
-  base.src = dataUrl;
-  base.alt = label;
 
-  // let the image always open the lightbox (pointer-events are off while locked)
-  base.addEventListener('click', () => openLightbox(dataUrl));
+   // Custom Modal
+   function openCustomModal(){ if (!file) return alert('Upload an image first.'); customModal.classList.add('open'); }
+   function closeCustomModal(){ customModal.classList.remove('open'); }
+   modalClose.addEventListener('click', closeCustomModal);
+   customModal.addEventListener('click', (e)=>{ if (e.target === customModal) closeCustomModal(); });
 
-  // Spotlight overlay (sharp area under cursor) – only meaningful while locked
-  const spotWrap = document.createElement('div');
-  spotWrap.className = 'spot';
-  const spotImg = document.createElement('img');
-  spotImg.src = dataUrl;
-  spotImg.alt = '';
-  spotWrap.appendChild(spotImg);
 
-  // Veil CTA
-  const veil = document.createElement('div');
-  veil.className = 'veil';
-  veil.innerHTML = `Click to reveal`;
-  veil.addEventListener('click', () => {
-    openLightbox(dataUrl);
-    revealCard(card);
-  });
+   // Medium dropdown toggles custom input
+   custMediumSel.addEventListener('change', () => {
+     const isCustom = custMediumSel.value === '__custom';
+     custMediumCustomWrap.classList.toggle('hidden', !isCustom);
+     if (isCustom) custMediumCustom.focus();
+   });
 
-  // Track mouse for spotlight only while locked
-  card.addEventListener('mousemove', (e) => {
-    if (!card.classList.contains('locked')) return;
-    const rect = card.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100;
-    const y = ((e.clientY - rect.top) / rect.height) * 100;
-    card.style.setProperty('--x', x + '%');
-    card.style.setProperty('--y', y + '%');
-  });
 
-  const cap = document.createElement('div');
-  cap.className = 'caption';
-  cap.textContent = label;
+   function composeCustomPrompt() {
+     const bits = [];
+     let medium = custMediumSel.value;
+     if (medium === '__custom') {
+       const customVal = custMediumCustom.value.trim();
+       if (customVal) medium = customVal;
+     }
+     if (medium) bits.push(`Medium of addition: ${medium}.`);
 
-  card.appendChild(base);
-  card.appendChild(spotWrap);
-  card.appendChild(veil);
-  card.appendChild(cap);
-  return card;
+
+     const theme  = custTheme.value.trim();
+     const extra  = custExtra.value.trim();
+     if (theme)  bits.push(`Theme: ${theme}.`);
+     if (extra)  bits.push(extra);
+
+
+     // Overlay-only guardrail
+     bits.push("STRICT REQUIREMENT: Overlay new elements on top of the current image only. Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. Preserve all original composition, lighting, textures, edges, and geometry. No global filters. No inpainting outside added elements. No background edits. Blend additions believably with soft shadows/occlusion. No text, logos, brands, or faces.");
+     return bits.join(' ');
+   }
+
+
+   // Loading bar control on the + card
+   let plusTimer = null, plusStart = 0;
+   const AVG_SECONDS_PER_CUSTOM = 12;
+
+
+   function setPlusLoading(on) {
+     const plus = results.querySelector('.plus-card');
+     if (!plus) return;
+
+
+     const bar = plus.querySelector('#plusBar');
+
+
+     if (on) {
+       plus.classList.add('loading');
+       plusStart = Date.now();
+       let eased = 0;
+
+
+       function tick() {
+         const elapsed = (Date.now() - plusStart) / 1000;
+         const est = AVG_SECONDS_PER_CUSTOM;
+         const target = Math.min(90, (elapsed / est) * 100);
+         eased += (target - eased) * 0.15;
+         if (bar) bar.style.width = `${eased}%`;
+         plusTimer = requestAnimationFrame(tick);
+       }
+       plusTimer = requestAnimationFrame(tick);
+     } else {
+       if (plusTimer) cancelAnimationFrame(plusTimer);
+       if (bar) bar.style.width = '0%';
+       plus.classList.remove('loading');
+     }
+   }
+
+
+   // --- Rendering presets with blur veil & reveal tracking ---
+   function renderLockedResult(index, dataUrl, label) {
+ const card = document.createElement('div');
+ card.className = 'result locked';
+ card.dataset.idx = String(index);
+
+
+ const base = document.createElement('img');
+ base.className = 'base';
+ base.src = dataUrl;
+ base.alt = label;
+
+
+ // let the image always open the lightbox (pointer-events are off while locked)
+ base.addEventListener('click', () => openLightbox(dataUrl));
+
+
+ // Spotlight overlay (sharp area under cursor) – only meaningful while locked
+ const spotWrap = document.createElement('div');
+ spotWrap.className = 'spot';
+ const spotImg = document.createElement('img');
+ spotImg.src = dataUrl;
+ spotImg.alt = '';
+ spotWrap.appendChild(spotImg);
+
+
+ // Veil CTA
+ const veil = document.createElement('div');
+ veil.className = 'veil';
+ veil.innerHTML = `Click to reveal`;
+ veil.addEventListener('click', () => {
+   openLightbox(dataUrl);
+   revealCard(card);
+ });
+
+
+ // Track mouse for spotlight only while locked
+ card.addEventListener('mousemove', (e) => {
+   if (!card.classList.contains('locked')) return;
+   const rect = card.getBoundingClientRect();
+   const x = ((e.clientX - rect.left) / rect.width) * 100;
+   const y = ((e.clientY - rect.top) / rect.height) * 100;
+   card.style.setProperty('--x', x + '%');
+   card.style.setProperty('--y', y + '%');
+ });
+
+
+ const cap = document.createElement('div');
+ cap.className = 'caption';
+ cap.textContent = label;
+
+
+ card.appendChild(base);
+ card.appendChild(spotWrap);
+ card.appendChild(veil);
+ card.appendChild(cap);
+ return card;
 }
+
+
 
 
 function revealCard(card) {
-  const idx = Number(card.dataset.idx);
-  if (revealed.has(idx)) return;
+ const idx = Number(card.dataset.idx);
+ if (revealed.has(idx)) return;
 
-  revealed.add(idx);
-  card.classList.remove('locked');
 
-  // permanently remove veil + spotlight layer
-  const veil = card.querySelector('.veil');
-  if (veil) veil.remove();
-  const spot = card.querySelector('.spot');
-  if (spot) spot.remove();
+ revealed.add(idx);
+ card.classList.remove('locked');
 
-  // re-enable pointer events on the base image so clicks open the lightbox
-  const base = card.querySelector('img.base');
-  if (base) base.style.pointerEvents = 'auto';
 
-  if (revealed.size >= totalPresets) {
-    customBtn.disabled = false;
-    ensurePlusCardAtEnd(false); // unlock +
-  }
+ // permanently remove veil + spotlight layer
+ const veil = card.querySelector('.veil');
+ if (veil) veil.remove();
+ const spot = card.querySelector('.spot');
+ if (spot) spot.remove();
+
+
+ // re-enable pointer events on the base image so clicks open the lightbox
+ const base = card.querySelector('img.base');
+ if (base) base.style.pointerEvents = 'auto';
+
+
+ if (revealed.size >= totalPresets) {
+   customBtn.disabled = false;
+   ensurePlusCardAtEnd(false); // unlock +
+ }
 }
+
+
 
 
 async function runPresets() {
-  if (!file || inFlight) return;
+ if (!file || inFlight) return;
 
-  // cancel any previous in-flight request
-  if (lastController) lastController.abort();
-  const controller = new AbortController();
-  lastController = controller;
 
-  const myReq = ++currentRequestId;
-  inFlight = true;
+ // cancel any previous in-flight request
+ if (lastController) lastController.abort();
+ const controller = new AbortController();
+ lastController = controller;
 
-  results.innerHTML = '';
-  revealed.clear();
-  customBtn.disabled = true;
-  ensurePlusCardAtEnd(true); // start locked
 
-  runBtn.disabled = true;
-  spin.style.display = 'inline-block';
-  startProgress(DEFAULT_STYLE_COUNT);
+ const myReq = ++currentRequestId;
+ inFlight = true;
 
-  // ----- Build form data with Safe Mode support -----
-  const fd = new FormData();
-  fd.append('image', file);
-  fd.append('username', localStorage.getItem('userName') || 'anon');
-  fd.append('session',  localStorage.getItem('sessionId') || (()=>{
-  const s = crypto.randomUUID(); localStorage.setItem('sessionId', s); return s;
-  })());
 
-  const baseExtra = (extraPrompt.value || '').trim();
-  let finalPrompt = baseExtra;
-  if (typeof safeMode !== 'undefined' && safeMode) {
-    finalPrompt = (finalPrompt ? finalPrompt + ' ' : '') + OVERLAY_ONLY_SUFFIX;
-  }
-  if (finalPrompt) fd.append('prompt', finalPrompt);
+ results.innerHTML = '';
+ revealed.clear();
+ customBtn.disabled = true;
+ ensurePlusCardAtEnd(true); // start locked
 
-  try {
-    const resp = await fetch(api('/edit'), { method: 'POST', body: fd, signal: controller.signal });
 
-    if (!resp.ok) {
-      const err = await resp.json().catch(() => ({}));
-      throw new Error(err.error || `HTTP ${resp.status}`);
-    }
-    const data = await resp.json();
+ runBtn.disabled = true;
+ spin.style.display = 'inline-block';
+ startProgress(DEFAULT_STYLE_COUNT);
 
-    // ignore if a newer request has superseded this one
-    if (myReq !== currentRequestId) return;
 
-    // strong de-dupe by slug and first bytes of image
-    const items = uniqueResults(data.results || []);
-    totalPresets = items.length || 5;
+ // ----- Build form data with Safe Mode support -----
+ const fd = new FormData();
+ fd.append('image', file);
 
-    finishProgress(items.length);
 
-    items.forEach((item, i) => {
-      const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
-      const card = renderLockedResult(i, item.dataUrl, label);
-      results.appendChild(card);
-    });
+ const baseExtra = (extraPrompt.value || '').trim();
+ let finalPrompt = baseExtra;
+ if (typeof safeMode !== 'undefined' && safeMode) {
+   finalPrompt = (finalPrompt ? finalPrompt + ' ' : '') + OVERLAY_ONLY_SUFFIX;
+ }
+ if (finalPrompt) fd.append('prompt', finalPrompt);
 
-    ensurePlusCardAtEnd(true);
-  } catch (e) {
-    if (e.name === 'AbortError') return; // quietly ignore aborted fetch
-    if (progressTimer) cancelAnimationFrame(progressTimer);
-    setBar(0); ptext.textContent = 'Error'; etaEl.textContent = e.message; etaEl.className = 'eta-slow';
-    alert('Error: ' + e.message);
-  } finally {
-    inFlight = false;
-    // re-enable only if we still have a file and this is the latest request
-    if (myReq === currentRequestId) {
-      runBtn.disabled = !file;
-      spin.style.display = 'none';
-    }
-  }
+
+ try {
+   const resp = await fetch(api('/edit'), { method: 'POST', body: fd, signal: controller.signal });
+
+
+   if (!resp.ok) {
+     const err = await resp.json().catch(() => ({}));
+     throw new Error(err.error || `HTTP ${resp.status}`);
+   }
+   const data = await resp.json();
+
+
+   // ignore if a newer request has superseded this one
+   if (myReq !== currentRequestId) return;
+
+
+   // strong de-dupe by slug and first bytes of image
+   const items = uniqueResults(data.results || []);
+   totalPresets = items.length || 5;
+
+
+   finishProgress(items.length);
+
+
+   items.forEach((item, i) => {
+     const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
+     const card = renderLockedResult(i, item.dataUrl, label);
+     results.appendChild(card);
+   });
+
+
+   ensurePlusCardAtEnd(true);
+ } catch (e) {
+   if (e.name === 'AbortError') return; // quietly ignore aborted fetch
+   if (progressTimer) cancelAnimationFrame(progressTimer);
+   setBar(0); ptext.textContent = 'Error'; etaEl.textContent = e.message; etaEl.className = 'eta-slow';
+   alert('Error: ' + e.message);
+ } finally {
+   inFlight = false;
+   // re-enable only if we still have a file and this is the latest request
+   if (myReq === currentRequestId) {
+     runBtn.disabled = !file;
+     spin.style.display = 'none';
+   }
+ }
 }
+
+
 
 
 function getSelectedMedium() {
-  let m = custMediumSel.value;
-  if (m === '__custom') m = custMediumCustom.value.trim();
-  return m || 'custom';
+ let m = custMediumSel.value;
+ if (m === '__custom') m = custMediumCustom.value.trim();
+ return m || 'custom';
 }
 
+
 function makeCustomCaptionSimple() {
-  const medium = getSelectedMedium();
-  const theme  = (custTheme.value || '').trim();
-  return theme ? `${medium} • ${theme}` : medium;
+ const medium = getSelectedMedium();
+ const theme  = (custTheme.value || '').trim();
+ return theme ? `${medium} • ${theme}` : medium;
 }
+
+
+
 
 
 
 async function runCustomOnce() {
-  if (!file) return;
-  if (revealed.size < totalPresets) { alert('Please reveal all 5 preset images first.'); return; }
+ if (!file) return;
+ if (revealed.size < totalPresets) { alert('Please reveal all 5 preset images first.'); return; }
 
-  let prompt = composeCustomPrompt();
-  if (!prompt.trim()) { alert('Please choose a medium and/or add some details.'); return; }
 
-  // If Safe Mode is ON, append the exact server suffix too (belt + suspenders)
-  if (safeMode) prompt += ' ' + OVERLAY_ONLY_SUFFIX;
+ let prompt = composeCustomPrompt();
+ if (!prompt.trim()) { alert('Please choose a medium and/or add some details.'); return; }
 
-  // Close modal & show + loading bar
-  customModal.classList.remove('open');
-  setPlusLoading(true);
-  customBtn.disabled = true; cspin.style.display = 'inline-block';
 
-  const fd = new FormData();
-  fd.append('image', file);
-  fd.append('prompt', prompt);
-  fd.append('prompt', finalPrompt || '');
-  fd.append('username', localStorage.getItem('userName') || 'anon');
-  fd.append('session',  localStorage.getItem('sessionId') || (()=>{
-  const s = crypto.randomUUID(); localStorage.setItem('sessionId', s); return s;
-})());
-  // Tell the server whether base edits are allowed
-  fd.append('allowModify', safeMode ?  'true' : 'false');
+ // If Safe Mode is ON, append the exact server suffix too (belt + suspenders)
+ if (safeMode) prompt += ' ' + OVERLAY_ONLY_SUFFIX;
 
-  try {
-    const resp = await fetch(api('/edit-custom'), { method: 'POST', body: fd });
-    if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || `HTTP ${resp.status}`); }
-    const data = await resp.json();
 
-    const caption = makeCustomCaptionSimple();
-    const plus = results.querySelector('.plus-card');
+ // Close modal & show + loading bar
+ customModal.classList.remove('open');
+ setPlusLoading(true);
+ customBtn.disabled = true; cspin.style.display = 'inline-block';
 
-    const card = document.createElement('div'); card.className = 'result';
-    const img = document.createElement('img'); img.src = data.result.dataUrl; img.alt = 'custom';
-    img.addEventListener('click', ()=>openLightbox(data.result.dataUrl));
-    const cap = document.createElement('div'); cap.className = 'caption'; cap.textContent = caption;
 
-    card.appendChild(img); card.appendChild(cap);
-    if (plus) results.insertBefore(card, plus); else results.appendChild(card);
+ const fd = new FormData();
+ fd.append('image', file);
+ fd.append('prompt', prompt);
+ // Tell the server whether base edits are allowed
+ fd.append('allowModify', safeMode ? 'false' : 'true');
 
-    ensurePlusCardAtEnd(false);
-  } catch (e) {
-    alert('Custom error: ' + e.message);
-  } finally {
-    setPlusLoading(false);
-    customBtn.disabled = false; cspin.style.display = 'none';
-  }
+
+ try {
+   const resp = await fetch(api('/edit-custom'), { method: 'POST', body: fd });
+   if (!resp.ok) { const err = await resp.json().catch(()=>({})); throw new Error(err.error || `HTTP ${resp.status}`); }
+   const data = await resp.json();
+
+
+   const caption = makeCustomCaptionSimple();
+   const plus = results.querySelector('.plus-card');
+
+
+   const card = document.createElement('div'); card.className = 'result';
+   const img = document.createElement('img'); img.src = data.result.dataUrl; img.alt = 'custom';
+   img.addEventListener('click', ()=>openLightbox(data.result.dataUrl));
+   const cap = document.createElement('div'); cap.className = 'caption'; cap.textContent = caption;
+
+
+   card.appendChild(img); card.appendChild(cap);
+   if (plus) results.insertBefore(card, plus); else results.appendChild(card);
+
+
+   ensurePlusCardAtEnd(false);
+ } catch (e) {
+   alert('Custom error: ' + e.message);
+ } finally {
+   setPlusLoading(false);
+   customBtn.disabled = false; cspin.style.display = 'none';
+ }
 }
 // Slide in from the nearest viewport edge
 document.addEventListener('DOMContentLoaded', () => {
-  const focusables = [
-   
-    '.card',
-    '.actions',
-    '.preview',
-    '.grid',
-    '.progress-wrap',
-    '.progress-meta'
-  ];
+ const focusables = [
+ 
+   '.card',
+   '.actions',
+   '.preview',
+   '.grid',
+   '.progress-wrap',
+   '.progress-meta'
+ ];
 
-  const els = document.querySelectorAll(focusables.join(', '));
 
-  const vw = () => window.innerWidth;
-  const vh = () => window.innerHeight;
+ const els = document.querySelectorAll(focusables.join(', '));
 
-  els.forEach((el, i) => {
-    const r = el.getBoundingClientRect();
-    // distances to each edge
-    const dLeft   = Math.max(0, r.left);
-    const dTop    = Math.max(0, r.top);
-    const dRight  = Math.max(0, vw() - r.right);
-    const dBottom = Math.max(0, vh() - r.bottom);
 
-    // pick the smallest distance (nearest edge)
-    const min = Math.min(dLeft, dTop, dRight, dBottom);
+ const vw = () => window.innerWidth;
+ const vh = () => window.innerHeight;
 
-    // offset distance (px) – tweak to taste
-    const OFFSET = 40;
 
-    // set direction via CSS vars
-    let tx = 0, ty = 0;
-    if (min === dLeft)      tx = -OFFSET;
-    else if (min === dRight) tx =  OFFSET;
-    else if (min === dTop)   ty = -OFFSET;
-    else                     ty =  OFFSET;
+ els.forEach((el, i) => {
+   const r = el.getBoundingClientRect();
+   // distances to each edge
+   const dLeft   = Math.max(0, r.left);
+   const dTop    = Math.max(0, r.top);
+   const dRight  = Math.max(0, vw() - r.right);
+   const dBottom = Math.max(0, vh() - r.bottom);
 
-    el.style.setProperty('--tx', tx + 'px');
-    el.style.setProperty('--ty', ty + 'px');
-    el.style.setProperty('--i', i.toString()); // for stagger
-    el.classList.add('slide-in');
-  });
+
+   // pick the smallest distance (nearest edge)
+   const min = Math.min(dLeft, dTop, dRight, dBottom);
+
+
+   // offset distance (px) – tweak to taste
+   const OFFSET = 40;
+
+
+   // set direction via CSS vars
+   let tx = 0, ty = 0;
+   if (min === dLeft)      tx = -OFFSET;
+   else if (min === dRight) tx =  OFFSET;
+   else if (min === dTop)   ty = -OFFSET;
+   else                     ty =  OFFSET;
+
+
+   el.style.setProperty('--tx', tx + 'px');
+   el.style.setProperty('--ty', ty + 'px');
+   el.style.setProperty('--i', i.toString()); // for stagger
+   el.classList.add('slide-in');
+ });
 });
 
 
 
-    // Wire up controls
-    runBtn.addEventListener('click', runPresets);
-    customBtn.addEventListener('click', runCustomOnce);
-  </script>
-  
-</body>
+
+
+
+   // Wire up controls
+   runBtn.addEventListener('click', runPresets);
+   customBtn.addEventListener('click', runCustomOnce);
+ </script>
+ </body>
 </html>
+
+
+
