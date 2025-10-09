@@ -6,6 +6,12 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "collage-worker",
 	"main": "src/index.js",
+	"r2_buckets": [
+    {
+      "bucket_name": "collage-sessions",
+      "binding": "collage_sessions"
+    }
+		],
 	"compatibility_date": "2025-10-04",
 	"observability": {
 		"enabled": true

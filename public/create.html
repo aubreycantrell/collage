@@ -245,7 +245,7 @@
   <button id="openCameraBtn" class="btn ghost" type="button">📷 Take a photo</button>
   <button id="runBtn" disabled>
     <span class="btn ghost" style="display:none" id="spin"></span>
-    Generate!
+    Inspire me!
   </button>
 </div>
 
@@ -452,7 +452,7 @@ const api = (path) => isLocal ? path : `${API_BASE}${path}`;
   "Do NOT alter, erase, blur, move, recolor, or replace any existing pixels unless explicitly requested. " +
   "Preserve all original composition, lighting, textures, edges, and geometry. " +
   "No global filters. No inpainting outside added elements. No background edits. " +
-  "Blend additions believably with soft shadows/occlusion. No text, logos, brands, or faces.";
+  "Blend additions believably with soft shadows/occlusion. No text, nudity, logos, brands, or faces.";
 
 // --------- Menu / Toggles state ---------
 let safeMode = localStorage.getItem('safeMode') === '1';
@@ -948,6 +948,11 @@ async function runPresets() {
   // ----- Build form data with Safe Mode support -----
   const fd = new FormData();
   fd.append('image', file);
+  fd.append('prompt', finalPrompt || '');
+  fd.append('username', localStorage.getItem('userName') || 'anon');
+  fd.append('session',  localStorage.getItem('sessionId') || (()=>{
+  const s = crypto.randomUUID(); localStorage.setItem('sessionId', s); return s;
+  })());
 
   const baseExtra = (extraPrompt.value || '').trim();
   let finalPrompt = baseExtra;
@@ -1029,8 +1034,13 @@ async function runCustomOnce() {
   const fd = new FormData();
   fd.append('image', file);
   fd.append('prompt', prompt);
+  fd.append('prompt', finalPrompt || '');
+  fd.append('username', localStorage.getItem('userName') || 'anon');
+  fd.append('session',  localStorage.getItem('sessionId') || (()=>{
+  const s = crypto.randomUUID(); localStorage.setItem('sessionId', s); return s;
+})());
   // Tell the server whether base edits are allowed
-  fd.append('allowModify', safeMode ? 'false' : 'true');
+  fd.append('allowModify', safeMode ?  'true' : 'false');
 
   try {
     const resp = await fetch(api('/edit-custom'), { method: 'POST', body: fd });
