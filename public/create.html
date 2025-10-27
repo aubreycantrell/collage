@@ -1267,21 +1267,6 @@ async function runCustomOnce() {
    customBtn.disabled = false; cspin.style.display = 'none';
  }
 }
-
-async function uploadToDrive(dataUrl) {
-  const blob = await (await fetch(dataUrl)).blob();
-  const fd = new FormData();
-  fd.append("image", blob, "generated.png");
-  const resp = await fetch("https://collage-worker.ac138.workers.dev/upload", {
-    method: "POST",
-    body: fd,
-  });
-  const json = await resp.json();
-  console.log("Uploaded to Google Drive:", json.link);
-}
-
-await uploadToDrive(data.result.dataUrl);
-
 // Slide in from the nearest viewport edge
 document.addEventListener('DOMContentLoaded', () => {
  const focusables = [
