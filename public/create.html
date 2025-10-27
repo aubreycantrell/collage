@@ -173,21 +173,58 @@
 
 
 /* Tutorial modal */
-.tutorial-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+.tutorial-modal { position:fixed; inset:0; display:none; align-items:center;
  background: rgba(0,0,0,.65); z-index:10000; padding: 20px;
 }
 .tutorial-modal.open { display:flex; }
-.tutorial-card { background:#0c0f17; border:1px solid var(--border); border-radius:14px;
- width:min(680px, 95vw); padding:16px; color:var(--fg);
+.tutorial-card { background:var(--card); border-radius:14px;
+ width:min(850px, 95vw); color:var(--fg); align-items: center; justify-content: center;  /* centers its children vertically if shorter */
+ margin: 0 auto;           
 }
-.tutorial-card h3{ margin:0 0 8px; }
+.tutorial-card h3{ margin:0 0 0px;  grid-column: 2;           /* center column */
+  justify-self: center;     /* center within that column */}
 .tutorial-card ul{ margin:8px 0 0 18px; color:var(--muted); }
-.tutorial-close { margin-left:auto; border:0; background:transparent; color:var(--fg);
+.tutorial-close { margin-right:auto; border:0; background:transparent; color:var(--fg);
  font-size:22px; cursor:pointer;
 }
 :root{
  --slide-duration: 2000ms;
  --slide-ease: cubic-bezier(.22,1,.36,1);
+}
+
+.slides { position:relative; width:100%; aspect-ratio:16/9; margin-top:2%; overflow:show; border-radius:10px; }
+.slide { position:absolute;  opacity:0; transition:opacity .4s ease; pointer-events:none; }
+.slide.is-active { opacity:1; pointer-events:auto; }
+.slide img { width:100%; height:100%; object-fit:contain; display:block; cursor:pointer; }
+.slide figcaption { background:rgba(0,0,0,0); color:#fff; font-size:14px; padding:8px; text-align:center; }
+.controls { display:flex; justify-content:center; align-items:center; gap:10px; margin-top:0px;}
+#dots { display:flex; gap:6px; }
+#dots button { width:0px; height:0px; border-radius:10%; border:none; background:rgba(0,0,0,0); cursor:pointer; }
+#dots button.active { background:rgba(0,0,0,0) }
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--fg);
+  color: var(--card);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  border: var(--fg);
+}
+.arrow:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+.arrow.prev {
+  left: 10px;
+}
+.arrow.next {
+  right: 10px;
 }
 
 
@@ -281,25 +318,12 @@
 </div>
 
 
-
-
-
-
      <div class="preview" id="preview"></div>
      <div class="actions">
        <input id="extraPrompt" style="background: var(--bg); " type="text" placeholder="(Optional) extra instructions / themes"/>
      
      </div>
 
-
-
-
-
-
-    
-
-
-    
    </section>
 
 
@@ -384,19 +408,44 @@
 
 
  <div id="tutorialModal" class="tutorial-modal" aria-modal="true" role="dialog">
-   <div class="tutorial-card">
-     <div style="display:flex; align-items:center; gap:8px;">
-       <h3 style="margin:0;">Quick Tutorial</h3>
-       <button id="tutorialClose" class="tutorial-close" aria-label="Close">×</button>
-     </div>
-     <ul>
-       <li>Upload or drag & drop an image.</li>
-       <li>Click <strong>Generate!</strong> to create 5 overlay presets.</li>
-       <li>Click a blurred card to reveal it; reveal all 5 to unlock <em>Custom overlay</em>.</li>
-       <li>Use <strong>Safe mode</strong> to force overlay-only prompts (no base edits).</li>
-     </ul>
-   </div>
- </div>
+  <div class="tutorial-card">
+    <div class="tutorial-card">
+      <button id="tutorialClose" class="tutorial-close" aria-label="Close">×</button>
+      <h3>Quick Tutorial!</h3>
+    </div>
+    
+
+    <!-- Slideshow images + captions -->
+    <div class="slides" id="tutorialSlides">
+      <div class="controls">
+        <button class="arrow prev" id="prevSlide" aria-label="Previous slide">‹</button>
+      </div>
+      <figure class="slide is-active">
+        <img src="../tut_image/intro.jpg" alt="Upload an image" style="border-radius:12px;">
+      </figure>
+      <figure class="slide">
+        <img src="../tut_image/upload.jpg" alt="Generate presets" style="border-radius:12px;">
+      </figure>
+      <figure class="slide">
+        <img src="../tut_image/generate.jpg" alt="Reveal cards" style="border-radius:12px;">
+      </figure>
+      <figure class="slide">
+        <img src="../tut_image/custom.jpg" alt="Reveal cards" style="border-radius:12px;">
+      </figure>
+      <figure class="slide">
+        <img src="../tut_image/custom_generation.jpg" alt="Reveal cards" style="border-radius:12px;">
+      </figure>
+      <button class="arrow next" id="nextSlide" aria-label="Next slide">›</button>
+    </div>
+    </div>
+ <!-- Controls -->
+
+  <div id="dots"></div>
+  
+   
+  </div>
+</div>
+
 
 
  <!-- Camera Modal -->
@@ -1218,6 +1267,21 @@ async function runCustomOnce() {
    customBtn.disabled = false; cspin.style.display = 'none';
  }
 }
+
+async function uploadToDrive(dataUrl) {
+  const blob = await (await fetch(dataUrl)).blob();
+  const fd = new FormData();
+  fd.append("image", blob, "generated.png");
+  const resp = await fetch("https://collage-worker.ac138.workers.dev/upload", {
+    method: "POST",
+    body: fd,
+  });
+  const json = await resp.json();
+  console.log("Uploaded to Google Drive:", json.link);
+}
+
+await uploadToDrive(data.result.dataUrl);
+
 // Slide in from the nearest viewport edge
 document.addEventListener('DOMContentLoaded', () => {
  const focusables = [
@@ -1229,6 +1293,34 @@ document.addEventListener('DOMContentLoaded', () => {
    '.progress-wrap',
    '.progress-meta'
  ];
+
+ // tutorial slideshow logic
+const slides = Array.from(document.querySelectorAll('#tutorialSlides .slide'));
+const nextBtn = document.getElementById('nextSlide');
+const prevBtn = document.getElementById('prevSlide');
+const dotsWrap = document.getElementById('dots');
+let current = 0;
+
+slides.forEach((_, i) => {
+  const dot = document.createElement('button');
+  dot.addEventListener('click', () => showSlide(i));
+  dotsWrap.appendChild(dot);
+});
+
+const dots = Array.from(dotsWrap.children);
+function showSlide(i) {
+  slides[current].classList.remove('is-active');
+  dots[current].classList.remove('active');
+  current = (i + slides.length) % slides.length;
+  slides[current].classList.add('is-active');
+  dots[current].classList.add('active');
+}
+
+nextBtn.addEventListener('click', () => showSlide(current + 1));
+prevBtn.addEventListener('click', () => showSlide(current - 1));
+slides.forEach(slide => slide.querySelector('img').addEventListener('click', () => showSlide(current + 1)));
+showSlide(0);
+
 
 
  const els = document.querySelectorAll(focusables.join(', '));
