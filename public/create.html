@@ -53,7 +53,7 @@
    }
    .grid { display: grid; gap: 16px; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
    .result { position: relative; background: #0c0f17; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
-   .caption { margin-top: 8px; font-size: 14px; color: var(--muted); }
+   .caption { font-size: 14px; color: var(--muted); }
 
 
    /* Blur veil for locked results */
@@ -176,7 +176,7 @@
 .tutorial-modal { position:fixed; inset:0; display:none; align-items:center;
  background: rgba(0,0,0,.65); z-index:10000; padding: 20px;
 }
-.tutorial-modal.open { display:flex; }
+.tutorial-modal.open { display:inline-block; align-items:center}
 .tutorial-card { background:var(--card); border-radius:14px;
  width:min(850px, 95vw); color:var(--fg); align-items: center; justify-content: center;  /* centers its children vertically if shorter */
  margin: 0 auto;           
@@ -192,7 +192,7 @@
  --slide-ease: cubic-bezier(.22,1,.36,1);
 }
 
-.slides { position:relative; width:100%; aspect-ratio:16/9; margin-top:2%; overflow:show; border-radius:10px; }
+.slides { position:relative; width:100%; aspect-ratio:16/9; overflow:show; border-radius:10px; }
 .slide { position:absolute;  opacity:0; transition:opacity .4s ease; pointer-events:none; }
 .slide.is-active { opacity:1; pointer-events:auto; }
 .slide img { width:100%; height:100%; object-fit:contain; display:block; cursor:pointer; }
@@ -411,7 +411,6 @@
   <div class="tutorial-card">
     <div class="tutorial-card">
       <button id="tutorialClose" class="tutorial-close" aria-label="Close">×</button>
-      <h3>Quick Tutorial!</h3>
     </div>
     
 
@@ -601,6 +600,21 @@ let camBlob   = null;
 
 
 // Helpers
+async function uploadToDrive(dataUrl) {
+  const name  = localStorage.getItem('userName');
+  const blob = await (await fetch(dataUrl)).blob();
+  const fd = new FormData();
+  fd.append("image", blob, name + ".png");
+
+  const resp = await fetch(`${API_BASE}/upload`, { method: "POST", body: fd });
+  const json = await resp.json();
+
+  if (!resp.ok) throw new Error(json.error || "Upload failed");
+  console.log("Uploaded to R2:", json.link);
+  return json.link;
+}
+
+
 function openCamModal() {
  cameraModal.classList.add('open');
  camError.style.display = 'none';
@@ -1169,11 +1183,24 @@ async function runPresets() {
    finishProgress(items.length);
 
 
-   items.forEach((item, i) => {
-     const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
-     const card = renderLockedResult(i, item.dataUrl, label);
-     results.appendChild(card);
-   });
+
+
+   for (const [i, item] of items.entries()) {
+  const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
+  const card = renderLockedResult(i, item.dataUrl, label);
+  results.appendChild(card);
+
+  // Optional auto-upload to Drive (one per item)
+  try {
+    const link = await uploadToDrive(item.dataUrl);
+    const linkEl = document.createElement('div');
+    linkEl.className = 'caption';
+    card.appendChild(linkEl);
+  } catch (e) {
+    console.warn(`Drive upload failed for ${label}:`, e);
+  }
+}
+
 
 
    ensurePlusCardAtEnd(true);
@@ -1260,6 +1287,17 @@ async function runCustomOnce() {
 
 
    ensurePlusCardAtEnd(false);
+
+   try {
+  const link = await uploadToDrive(data.result.dataUrl);
+  // Optional: show a tiny link under the image
+  const linkEl = document.createElement('div');
+  linkEl.className = 'caption';
+  card.appendChild(linkEl);
+} catch (e) {
+  console.warn("Drive upload failed:", e);
+}
+
  } catch (e) {
    alert('Custom error: ' + e.message);
  } finally {
