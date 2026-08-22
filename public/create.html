@@ -406,6 +406,15 @@
    </div>
  </div>
 
+ <section id="previous-uploads" style="margin-top:24px;">
+  <div style="display:flex; align-items:center; justify-content:space-between;">
+    <h3 style="margin:0;">Previous uploads</h3>
+    <button id="clearHistoryBtn" type="button" style="padding:4px 8px;">Clear</button>
+  </div>
+  <div id="uploadsGrid" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px;"></div>
+</section>
+
+
 
  <div id="tutorialModal" class="tutorial-modal" aria-modal="true" role="dialog">
   <div class="tutorial-card">
@@ -818,21 +827,17 @@ tutorialModal.addEventListener('click', (e) => { if (e.target === tutorialModal)
 
 
 function uniqueResults(items) {
- const seenSlug = new Set();
- const seenImg = new Set();
- const out = [];
- for (let i = 0; i < items.length; i++) {
-   const it = items[i] || {};
-   const slugKey = (it.slug ? String(it.slug) : `idx-${i}`).trim().toLowerCase();
-   const imgKey = (it.dataUrl ? it.dataUrl.slice(0, 80) : `noimg-${i}`);
-   if (seenSlug.has(slugKey) || seenImg.has(imgKey)) continue;
-   seenSlug.add(slugKey);
-   seenImg.add(imgKey);
-   out.push(it);
- }
- return out;
+  const seenSlug = new Set();
+  const out = [];
+  for (let i = 0; i < items.length; i++) {
+    const it = items[i] || {};
+    const slugKey = (it.slug ? String(it.slug) : `idx-${i}`).trim().toLowerCase();
+    if (seenSlug.has(slugKey)) continue;
+    seenSlug.add(slugKey);
+    out.push(it);
+  }
+  return out;
 }
-
 
 
 
@@ -1234,6 +1239,83 @@ function makeCustomCaptionSimple() {
  const theme  = (custTheme.value || '').trim();
  return theme ? `${medium} • ${theme}` : medium;
 }
+
+
+(() => {
+  const HISTORY_KEY = "uploadHistory.v1";
+  const grid = () => document.getElementById("uploadsGrid");
+
+  function readHistory() {
+    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || "[]"); }
+    catch { return []; }
+  }
+  function writeHistory(list) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(list.slice(0, 50))); // keep last 50
+  }
+
+  // Call this after a successful upload/generation
+  // Example:
+  // addUploadResult({ title, url: imageUrl, filename, meta: { sizeKB, model, prompt } });
+  window.addUploadResult = function addUploadResult(entry) {
+    const ts = Date.now();
+    const clean = {
+      title: entry.title || entry.filename || "Untitled",
+      url: entry.url || "",
+      filename: entry.filename || "",
+      meta: entry.meta || {},
+      ts
+    };
+    const list = readHistory();
+    // de-dup by URL/filename
+    const dedup = list.filter(x => x.url !== clean.url && x.filename !== clean.filename);
+    dedup.unshift(clean);
+    writeHistory(dedup);
+    renderHistory();
+  };
+
+  function timeAgo(ts) {
+    const s = Math.floor((Date.now() - ts) / 1000);
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s/60); if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m/60); if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h/24); return `${d}d ago`;
+  }
+
+  function renderHistory() {
+    const list = readHistory();
+    const el = grid();
+    if (!el) return;
+    el.innerHTML = list.map(item => {
+      const thumb = item.url
+        ? `<img src="${item.url}" alt="${item.title}" style="width:100%; height:120px; object-fit:cover; border-radius:10px; border:1px solid #e5e7eb;">`
+        : `<div style="width:100%; height:120px; display:grid; place-items:center; border:1px dashed #cbd5e1; border-radius:10px;">No preview</div>`;
+      const meta = [];
+      if (item.filename) meta.push(item.filename);
+      if (item.meta?.sizeKB) meta.push(`${item.meta.sizeKB} KB`);
+      if (item.meta?.model) meta.push(item.meta.model);
+      return `
+        <a href="${item.url || '#'}" target="${item.url ? '_blank' : '_self'}" style="text-decoration:none; color:inherit;">
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            ${thumb}
+            <div style="font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.title}</div>
+            <div style="font-size:12px; color:#6b7280;">${timeAgo(item.ts)}${meta.length ? " · " + meta.join(" · ") : ""}</div>
+          </div>
+        </a>
+      `;
+    }).join("");
+  }
+
+  function clearHistory() {
+    localStorage.removeItem(HISTORY_KEY);
+    renderHistory();
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    renderHistory();
+    const btn = document.getElementById("clearHistoryBtn");
+    if (btn) btn.addEventListener("click", clearHistory);
+  });
+})();
 
 
 
