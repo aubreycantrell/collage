@@ -1270,12 +1270,17 @@ async function runPresets() {
   }
 }
 
-// Also upload the original for session record-keeping
+ensurePlusCardAtEnd(true);
+
+// Upload the original image too, then save the full session
 let originalLink = '';
-try { originalLink = await uploadToDrive(preview.querySelector('img').src); } catch (e) {}
+try {
+  originalLink = await uploadToDrive(preview.querySelector('img').src);
+} catch (e) {
+  console.warn('Original image upload failed:', e);
+}
 
 await saveSession(originalLink);
-
 
 
    ensurePlusCardAtEnd(true);
