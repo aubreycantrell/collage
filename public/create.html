@@ -51,7 +51,13 @@
      width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--border);
      background: #0b0e16; cursor: zoom-in;
    }
-   .grid { display: grid; gap: 16px; margin-top: 12px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+   .grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  align-items: start; /* prevents cards from stretching to match tallest row item */
+}
    .result { position: relative; background: #0c0f17; border: 1px solid var(--border); border-radius: 16px; padding: 12px; }
    .caption { font-size: 14px; color: var(--muted); }
 
@@ -251,16 +257,37 @@
    animation: none;
  }
  }
+ .blurb { margin-top: 8px; font-size: 13px; color: var(--fg); line-height: 1.4; transition: max-height 0.3s ease;}
+.blurb strong { color: var(--accent); }
 
+.lightbox-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  max-width: 95vw;
+  max-height: 88vh;
+}
+.lightbox-body img {
+  max-width: 65vw;
+  max-height: 85vh;
+  border-radius: 10px;
+  display: block;
+}
+.lightbox-blurb {
+  max-width: 320px;
+  color: var(--fg);
+  font-size: 14px;
+  line-height: 1.5;
+  padding-top: 8px;
+}
+.lightbox-blurb strong { color: var(--accent); }
+.lightbox-blurb:empty { display: none; }
 
-
-
-
-
-
-
-
-
+@media (max-width: 900px) {
+  .lightbox-body { flex-direction: column; overflow-y: auto; }
+  .lightbox-body img { max-width: 90vw; max-height: 60vh; }
+  .lightbox-blurb { max-width: 90vw; }
+}
 
 
  </style>
@@ -337,12 +364,14 @@
 
  <!-- Lightbox -->
  <div class="lightbox" id="lightbox" aria-modal="true" role="dialog">
-   <div class="lightbox-content">
-     <button class="lightbox-close" id="lbClose" aria-label="Close">×</button>
-     <img id="lbImg" alt="Expanded result" />
-   </div>
- </div>
-
+  <div class="lightbox-content">
+    <button class="lightbox-close" id="lbClose" aria-label="Close">×</button>
+    <div class="lightbox-body">
+      <img id="lbImg" alt="Expanded result" />
+      <div id="lbBlurb" class="lightbox-blurb"></div>
+    </div>
+  </div>
+</div>
 
  <!-- Custom Prompt Modal -->
  <div class="modal" id="customModal" aria-modal="true" role="dialog">
@@ -914,7 +943,22 @@ function uniqueBySlug(items) {
 
 
    // Lightbox
-   function openLightbox(src){ lbImg.src = src; lightbox.classList.add('open'); document.body.style.overflow='hidden'; }
+   const lbBlurb = document.getElementById('lbBlurb');
+
+function openLightbox(src, blurb){
+  lbImg.src = src;
+  if (blurb && (blurb.summary || blurb.placement || blurb.justification)) {
+    lbBlurb.innerHTML = `
+      ${blurb.summary ? `<div><strong>Added:</strong> ${blurb.summary}</div>` : ''}
+      ${blurb.placement ? `<div><strong>Where:</strong> ${blurb.placement}</div>` : ''}
+      ${blurb.justification ? `<div><strong>Why:</strong> ${blurb.justification}</div>` : ''}
+    `;
+  } else {
+    lbBlurb.innerHTML = '';
+  }
+  lightbox.classList.add('open');
+  document.body.style.overflow='hidden';
+}
    function closeLightbox(){ lightbox.classList.remove('open'); lbImg.src = ''; document.body.style.overflow=''; }
    lightbox.addEventListener('click', (e)=>{ if(e.target===lightbox) closeLightbox(); });
    lbClose.addEventListener('click', closeLightbox);
@@ -1036,63 +1080,63 @@ function uniqueBySlug(items) {
 
 
    // --- Rendering presets with blur veil & reveal tracking ---
-   function renderLockedResult(index, dataUrl, label) {
- const card = document.createElement('div');
- card.className = 'result locked';
- card.dataset.idx = String(index);
+   function renderLockedResult(index, dataUrl, label, blurb) {
+  const card = document.createElement('div');
+  card.className = 'result locked';
+  card.dataset.idx = String(index);
 
+  const base = document.createElement('img');
+  base.className = 'base';
+  base.src = dataUrl;
+  base.alt = label;
+  base.addEventListener('click', () => openLightbox(dataUrl, blurb));
+  const spotWrap = document.createElement('div');
+  spotWrap.className = 'spot';
+  const spotImg = document.createElement('img');
+  spotImg.src = dataUrl;
+  spotImg.alt = '';
+  spotWrap.appendChild(spotImg);
 
- const base = document.createElement('img');
- base.className = 'base';
- base.src = dataUrl;
- base.alt = label;
+  const veil = document.createElement('div');
+  veil.className = 'veil';
+  veil.innerHTML = `Click to reveal`;
+  veil.addEventListener('click', () => {
+  openLightbox(dataUrl, blurb);
+  revealCard(card);
+});
 
+  card.addEventListener('mousemove', (e) => {
+    if (!card.classList.contains('locked')) return;
+    const rect = card.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--x', x + '%');
+    card.style.setProperty('--y', y + '%');
+  });
 
- // let the image always open the lightbox (pointer-events are off while locked)
- base.addEventListener('click', () => openLightbox(dataUrl));
+  const cap = document.createElement('div');
+  cap.className = 'caption';
+  cap.textContent = label;
 
+  // Blurb block — hidden until revealed
+  const blurbEl = document.createElement('div');
+  blurbEl.className = 'blurb hidden';
+  if (blurb && (blurb.summary || blurb.placement || blurb.justification)) {
+    blurbEl.innerHTML = `
+      ${blurb.summary ? `<div><strong>Added:</strong> ${blurb.summary}</div>` : ''}
+      ${blurb.placement ? `<div><strong>Where:</strong> ${blurb.placement}</div>` : ''}
+      ${blurb.justification ? `<div><strong>Why:</strong> ${blurb.justification}</div>` : ''}
+    `;
+  }
 
- // Spotlight overlay (sharp area under cursor) – only meaningful while locked
- const spotWrap = document.createElement('div');
- spotWrap.className = 'spot';
- const spotImg = document.createElement('img');
- spotImg.src = dataUrl;
- spotImg.alt = '';
- spotWrap.appendChild(spotImg);
-
-
- // Veil CTA
- const veil = document.createElement('div');
- veil.className = 'veil';
- veil.innerHTML = `Click to reveal`;
- veil.addEventListener('click', () => {
-   openLightbox(dataUrl);
-   revealCard(card);
- });
-
-
- // Track mouse for spotlight only while locked
- card.addEventListener('mousemove', (e) => {
-   if (!card.classList.contains('locked')) return;
-   const rect = card.getBoundingClientRect();
-   const x = ((e.clientX - rect.left) / rect.width) * 100;
-   const y = ((e.clientY - rect.top) / rect.height) * 100;
-   card.style.setProperty('--x', x + '%');
-   card.style.setProperty('--y', y + '%');
- });
-
-
- const cap = document.createElement('div');
- cap.className = 'caption';
- cap.textContent = label;
-
-
- card.appendChild(base);
- card.appendChild(spotWrap);
- card.appendChild(veil);
- card.appendChild(cap);
- return card;
+  card.appendChild(base);
+  card.appendChild(spotWrap);
+  card.appendChild(veil);
+  card.appendChild(cap);
+  card.appendChild(blurbEl);
+  return card;
 }
+
 
 
 
@@ -1104,6 +1148,8 @@ function revealCard(card) {
 
  revealed.add(idx);
  card.classList.remove('locked');
+ const blurbEl = card.querySelector('.blurb');
+if (blurbEl) blurbEl.classList.remove('hidden');
 
 
  // permanently remove veil + spotlight layer
@@ -1192,7 +1238,7 @@ async function runPresets() {
 
    for (const [i, item] of items.entries()) {
   const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
-  const card = renderLockedResult(i, item.dataUrl, label);
+  const card = renderLockedResult(i, item.dataUrl, label, item.blurb);  
   results.appendChild(card);
 
   // Optional auto-upload to Drive (one per item)
@@ -1359,14 +1405,22 @@ async function runCustomOnce() {
 
 
    const card = document.createElement('div'); card.className = 'result';
-   const img = document.createElement('img'); img.src = data.result.dataUrl; img.alt = 'custom';
-   img.addEventListener('click', ()=>openLightbox(data.result.dataUrl));
-   const cap = document.createElement('div'); cap.className = 'caption'; cap.textContent = caption;
+const img = document.createElement('img'); img.src = data.result.dataUrl; img.alt = 'custom';
+img.addEventListener('click', ()=>openLightbox(data.result.dataUrl, data.result.blurb));
+const cap = document.createElement('div'); cap.className = 'caption'; cap.textContent = caption;
 
+const blurbEl = document.createElement('div');
+blurbEl.className = 'blurb';
+const b = data.result.blurb;
+if (b && (b.summary || b.placement || b.justification)) {
+  blurbEl.innerHTML = `
+    ${b.summary ? `<div><strong>Added:</strong> ${b.summary}</div>` : ''}
+    ${b.placement ? `<div><strong>Where:</strong> ${b.placement}</div>` : ''}
+    ${b.justification ? `<div><strong>Why:</strong> ${b.justification}</div>` : ''}
+  `;
+}
 
-   card.appendChild(img); card.appendChild(cap);
-   if (plus) results.insertBefore(card, plus); else results.appendChild(card);
-
+card.appendChild(img); card.appendChild(cap); card.appendChild(blurbEl);
 
    ensurePlusCardAtEnd(false);
 
