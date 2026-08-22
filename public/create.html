@@ -310,6 +310,12 @@
              <label>Open tutorial</label>
              <span>❓</span>
            </div>
+
+           <div class="menu-item" id="historyItem">
+            <label>View past sessions</label>
+            <span>🕘</span>
+          </div>
+
          </div>
        </div>
      </div>
@@ -370,6 +376,18 @@
       <img id="lbImg" alt="Expanded result" />
       <div id="lbBlurb" class="lightbox-blurb"></div>
     </div>
+  </div>
+</div>
+
+ <!-- History Modal -->
+
+<div class="modal" id="historyModal" aria-modal="true" role="dialog">
+  <div class="modal-card" style="max-width:820px;">
+    <div class="modal-header">
+      <div class="modal-title">Your Past Sessions</div>
+      <button id="historyClose" class="lightbox-close" aria-label="Close">×</button>
+    </div>
+    <div id="historyList" style="display:grid; gap:12px; margin-top:12px; max-height:70vh; overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -580,6 +598,7 @@ const api = (path) => isLocal ? path : `${API_BASE}${path}`;
 
 
    let file = null;
+   let currentSessionId = null;
 
 
    // track reveals
@@ -1185,6 +1204,7 @@ async function runPresets() {
 
  const myReq = ++currentRequestId;
  inFlight = true;
+ currentSessionId = String(Date.now());
 
 
  results.innerHTML = '';
@@ -1238,19 +1258,23 @@ async function runPresets() {
 
    for (const [i, item] of items.entries()) {
   const label = (item.slug || `style-${i + 1}`).replace(/-/g, ' ');
-  const card = renderLockedResult(i, item.dataUrl, label, item.blurb);  
+  const card = renderLockedResult(i, item.dataUrl, label, item.blurb);
   results.appendChild(card);
 
-  // Optional auto-upload to Drive (one per item)
   try {
     const link = await uploadToDrive(item.dataUrl);
-    const linkEl = document.createElement('div');
-    linkEl.className = 'caption';
-    card.appendChild(linkEl);
+    const base = card.querySelector('img.base');
+    if (base) base.dataset.r2link = link;
   } catch (e) {
     console.warn(`Drive upload failed for ${label}:`, e);
   }
 }
+
+// Also upload the original for session record-keeping
+let originalLink = '';
+try { originalLink = await uploadToDrive(preview.querySelector('img').src); } catch (e) {}
+
+await saveSession(originalLink);
 
 
 
@@ -1440,6 +1464,7 @@ card.appendChild(img); card.appendChild(cap); card.appendChild(blurbEl);
    setPlusLoading(false);
    customBtn.disabled = false; cspin.style.display = 'none';
  }
+ await saveSession();
 }
 // Slide in from the nearest viewport edge
 document.addEventListener('DOMContentLoaded', () => {
@@ -1520,6 +1545,133 @@ showSlide(0);
    el.classList.add('slide-in');
  });
 });
+
+async function saveSession(originalImageLink) {
+  const username = localStorage.getItem('userName');
+  if (!username || !currentSessionId) return;
+
+  const resultCards = Array.from(results.querySelectorAll('.result:not(.plus-card)'));
+  const sessionResults = [];
+  const sessionCustoms = [];
+
+  resultCards.forEach(card => {
+    const img = card.querySelector('img.base') || card.querySelector('img');
+    const captionEl = card.querySelector('.caption');
+    const blurbEl = card.querySelector('.blurb');
+    const entry = {
+      label: captionEl ? captionEl.textContent : '',
+      link: img ? img.dataset.r2link || img.src : '',
+      blurbHtml: blurbEl ? blurbEl.innerHTML : ''
+    };
+    if (card.classList.contains('locked') || card.dataset.idx !== undefined) {
+      sessionResults.push(entry);
+    } else {
+      sessionCustoms.push(entry);
+    }
+  });
+
+  try {
+    await fetch(api('/session'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username,
+        sessionId: currentSessionId,
+        createdAt: currentSessionId,
+        originalImageLink: originalImageLink || '',
+        results: sessionResults,
+        customs: sessionCustoms
+      })
+    });
+  } catch (e) {
+    console.warn('Session save failed:', e);
+  }
+}
+
+const historyItem = document.getElementById('historyItem');
+const historyModal = document.getElementById('historyModal');
+const historyClose = document.getElementById('historyClose');
+const historyList = document.getElementById('historyList');
+
+historyItem.addEventListener('click', async () => {
+  menu.classList.remove('open');
+  historyModal.classList.add('open');
+  historyList.innerHTML = '<div class="muted">Loading…</div>';
+
+  const username = localStorage.getItem('userName');
+  try {
+    const resp = await fetch(api(`/sessions?username=${encodeURIComponent(username)}`));
+    const data = await resp.json();
+    renderHistoryList(data.sessions || []);
+  } catch (e) {
+    historyList.innerHTML = '<div class="muted">Could not load history.</div>';
+  }
+});
+
+historyClose.addEventListener('click', () => historyModal.classList.remove('open'));
+historyModal.addEventListener('click', (e) => { if (e.target === historyModal) historyModal.classList.remove('open'); });
+
+function renderHistoryList(sessions) {
+  if (!sessions.length) {
+    historyList.innerHTML = '<div class="muted">No past sessions yet.</div>';
+    return;
+  }
+  historyList.innerHTML = '';
+  sessions.forEach(session => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex; gap:12px; align-items:center; border:1px solid var(--border); border-radius:12px; padding:10px; cursor:pointer;';
+    const date = new Date(Number(session.createdAt)).toLocaleString();
+    const thumbLink = session.originalImageLink || (session.results[0] && session.results[0].link) || '';
+    row.innerHTML = `
+      ${thumbLink ? `<img src="${thumbLink}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;" />` : ''}
+      <div>
+        <div style="font-weight:700;">${date}</div>
+        <div class="small">${session.results.length} preset${session.results.length===1?'':'s'} · ${session.customs.length} custom</div>
+      </div>
+    `;
+    row.addEventListener('click', () => loadSessionIntoResults(session));
+    historyList.appendChild(row);
+  });
+}
+
+function loadSessionIntoResults(session) {
+  historyModal.classList.remove('open');
+  results.innerHTML = '';
+  currentSessionId = session.sessionId;
+
+  session.results.forEach((r, i) => {
+    const card = document.createElement('div');
+    card.className = 'result';
+    card.innerHTML = `
+      <img src="${r.link}" alt="${r.label}" />
+      <div class="caption">${r.label}</div>
+      <div class="blurb">${r.blurbHtml || ''}</div>
+    `;
+    card.querySelector('img').addEventListener('click', () => {
+      let blurb = null;
+      openLightbox(r.link, blurb);
+    });
+    results.appendChild(card);
+  });
+
+  session.customs.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'result';
+    card.innerHTML = `
+      <img src="${c.link}" alt="${c.label}" />
+      <div class="caption">${c.label}</div>
+      <div class="blurb">${c.blurbHtml || ''}</div>
+    `;
+    card.querySelector('img').addEventListener('click', () => openLightbox(c.link, null));
+    results.appendChild(card);
+  });
+
+  ensurePlusCardAtEnd(false);
+  customBtn.disabled = false;
+  revealed.clear();
+  for (let i = 0; i < session.results.length; i++) revealed.add(i);
+  totalPresets = session.results.length;
+}
 
 
 
