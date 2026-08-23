@@ -289,6 +289,19 @@
   .lightbox-blurb { max-width: 90vw; }
 }
 
+.remix-btn {
+  margin-top: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+  font-weight: 700;
+}
+.remix-btn:hover { border-color: var(--accent); }
+
 
  </style>
 </head>
@@ -373,6 +386,33 @@
     <div class="lightbox-body">
       <img id="lbImg" alt="Expanded result" />
       <div id="lbBlurb" class="lightbox-blurb"></div>
+    </div>
+  </div>
+</div>
+
+
+ <!-- Remix Modal -->
+<div class="modal" id="remixModal" aria-modal="true" role="dialog">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title">Remix this result</div>
+      <button id="remixModalClose" class="lightbox-close" aria-label="Close">×</button>
+    </div>
+    <div class="muted" style="margin:6px 0 12px">
+      Describe what you'd like to add, change, or remove — this branches off this specific image.
+    </div>
+    <div class="custom-card">
+      <div>
+        <label class="small" for="remixPrompt">Remix instructions</label>
+        <textarea id="remixPrompt" rows="3" placeholder="e.g. add more color, remove the shark, make it nighttime…"></textarea>
+      </div>
+      <div class="actions">
+        <button id="remixSubmitBtn">
+          <span class="spinner" style="display:none" id="remixSpin"></span>
+          Generate Remix
+        </button>
+        <span class="small">Uses this image as the new base</span>
+      </div>
     </div>
   </div>
 </div>
@@ -1150,6 +1190,8 @@ function openLightbox(src, blurb){
   card.appendChild(veil);
   card.appendChild(cap);
   card.appendChild(blurbEl);
+  const remixBtnEl = addRemixButton(card, dataUrl, label);
+remixBtnEl.classList.add('hidden');
   return card;
 }
 
@@ -1166,6 +1208,8 @@ function revealCard(card) {
  card.classList.remove('locked');
  const blurbEl = card.querySelector('.blurb');
 if (blurbEl) blurbEl.classList.remove('hidden');
+const remixBtnEl = card.querySelector('.remix-btn');
+if (remixBtnEl) remixBtnEl.classList.remove('hidden');
 
 
  // permanently remove veil + spotlight layer
@@ -1446,7 +1490,11 @@ if (b && (b.summary || b.placement || b.justification)) {
   `;
 }
 
-card.appendChild(img); card.appendChild(cap); card.appendChild(blurbEl);
+card.appendChild(img); 
+card.appendChild(cap); 
+card.appendChild(blurbEl);
+
+addRemixButton(card, data.result.dataUrl, caption);
 
    ensurePlusCardAtEnd(false);
 
@@ -1648,10 +1696,8 @@ function loadSessionIntoResults(session) {
       <div class="caption">${r.label}</div>
       <div class="blurb">${r.blurbHtml || ''}</div>
     `;
-    card.querySelector('img').addEventListener('click', () => {
-      let blurb = null;
-      openLightbox(r.link, blurb);
-    });
+    card.querySelector('img').addEventListener('click', () => openLightbox(r.link, null));
+    addRemixButton(card, r.link, r.label);
     results.appendChild(card);
   });
 
@@ -1664,6 +1710,7 @@ function loadSessionIntoResults(session) {
       <div class="blurb">${c.blurbHtml || ''}</div>
     `;
     card.querySelector('img').addEventListener('click', () => openLightbox(c.link, null));
+    addRemixButton(card, c.link, c.label);
     results.appendChild(card);
   });
 
@@ -1674,6 +1721,124 @@ function loadSessionIntoResults(session) {
   totalPresets = session.results.length;
 }
 
+const remixModal = document.getElementById('remixModal');
+const remixModalClose = document.getElementById('remixModalClose');
+const remixPrompt = document.getElementById('remixPrompt');
+const remixSubmitBtn = document.getElementById('remixSubmitBtn');
+const remixSpin = document.getElementById('remixSpin');
+
+let remixSource = null; // { src, label, parentCard }
+
+function openRemixModal(src, label, parentCard) {
+  remixSource = { src, label, parentCard };
+  remixPrompt.value = '';
+  remixModal.classList.add('open');
+}
+function closeRemixModal() {
+  remixModal.classList.remove('open');
+  remixSource = null;
+}
+remixModalClose.addEventListener('click', closeRemixModal);
+remixModal.addEventListener('click', (e) => { if (e.target === remixModal) closeRemixModal(); });
+
+async function srcToBlob(src) {
+  const resp = await fetch(src);
+  return await resp.blob();
+}
+
+// Adds a Remix button to any card, wired to a given image source + label
+function addRemixButton(card, imgSrc, label) {
+  const btn = document.createElement('button');
+  btn.className = 'remix-btn';
+  btn.type = 'button';
+  btn.textContent = '🔀 Remix';
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openRemixModal(imgSrc, label, card);
+  });
+  card.appendChild(btn);
+  return btn;
+}
+
+remixSubmitBtn.addEventListener('click', async () => {
+  if (!remixSource || !remixSource.src) {
+    alert('No image selected for remix. Please close this and try clicking Remix again.');
+    return;
+  }
+  const promptText = remixPrompt.value.trim();
+  if (!promptText) { alert('Please describe what you want to change.'); return; }
+
+  const sourceSnapshot = { ...remixSource }; // freeze a copy so it can't be nulled mid-flight
+
+  remixSubmitBtn.disabled = true;
+  remixSpin.style.display = 'inline-block';
+
+  try {
+    const blob = await srcToBlob(sourceSnapshot.src);
+    const fd = new FormData();
+    fd.append('image', blob, 'remix-source.png');
+
+    let finalPrompt = promptText;
+    if (typeof safeMode !== 'undefined' && safeMode) finalPrompt += ' ' + OVERLAY_ONLY_SUFFIX;
+    fd.append('prompt', finalPrompt);
+    fd.append('allowModify', safeMode ? 'false' : 'true');
+
+    const resp = await fetch(api('/edit-custom'), { method: 'POST', body: fd });
+    if (!resp.ok) { const err = await resp.json().catch(() => ({})); throw new Error(err.error || `HTTP ${resp.status}`); }
+    const data = await resp.json();
+
+    const label = `remix of ${sourceSnapshot.label || 'result'}`;
+    const card = document.createElement('div');
+    card.className = 'result';
+
+    const img = document.createElement('img');
+    img.src = data.result.dataUrl;
+    img.alt = label;
+    img.addEventListener('click', () => openLightbox(data.result.dataUrl, data.result.blurb));
+
+    const cap = document.createElement('div');
+    cap.className = 'caption';
+    cap.textContent = label;
+
+    const blurbEl = document.createElement('div');
+    blurbEl.className = 'blurb';
+    const b = data.result.blurb;
+    if (b && (b.summary || b.placement || b.justification)) {
+      blurbEl.innerHTML = `
+        ${b.summary ? `<div><strong>Added:</strong> ${b.summary}</div>` : ''}
+        ${b.placement ? `<div><strong>Where:</strong> ${b.placement}</div>` : ''}
+        ${b.justification ? `<div><strong>Why:</strong> ${b.justification}</div>` : ''}
+      `;
+    }
+
+    card.appendChild(img);
+    card.appendChild(cap);
+    card.appendChild(blurbEl);
+    addRemixButton(card, data.result.dataUrl, label);
+
+    if (sourceSnapshot.parentCard && sourceSnapshot.parentCard.parentElement === results) {
+      sourceSnapshot.parentCard.insertAdjacentElement('afterend', card);
+    } else {
+      const plus = results.querySelector('.plus-card');
+      if (plus) results.insertBefore(card, plus); else results.appendChild(card);
+    }
+
+    try {
+      const link = await uploadToDrive(data.result.dataUrl);
+      img.dataset.r2link = link;
+    } catch (e) {
+      console.warn('Remix upload failed:', e);
+    }
+
+    await saveSession();
+    closeRemixModal();
+  } catch (e) {
+    alert('Remix error: ' + e.message);
+  } finally {
+    remixSubmitBtn.disabled = false;
+    remixSpin.style.display = 'none';
+  }
+});
 
 
 
